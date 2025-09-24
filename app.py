@@ -1,12 +1,14 @@
 import os
 from flask import Flask, render_template, request, session, redirect, url_for
 from functools import wraps
+from dotenv import load_dotenv # dotenvをインポート
+
+load_dotenv() # .envファイルを読み込む
 
 app = Flask(__name__)
-# 必ず自分だけの秘密のキーに変更してください
-app.secret_key = 'your_very_secret_key_here'
+# 環境変数からSECRET_KEYを読み込む
+app.secret_key = os.environ.get('SECRET_KEY')
 
-# ログインを要求するデコレータ
 def login_required(f):
     @wraps(f)
     def decorated_view(*args, **kwargs):
@@ -15,31 +17,27 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_view
 
-# ログインページの処理
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        # メンバーに共有するパスワードをここで設定
-        if request.form['password'] == 'kashima': 
+        # 環境変数からパスワードを読み込む
+        if request.form['password'] == os.environ.get('SITE_PASSWORD'):
             session['logged_in'] = True
             return redirect(url_for('home'))
         else:
             return "パスワードが違います"
     return render_template('login.html')
 
-# ログアウトの処理
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
     return redirect(url_for('login'))
 
-# ホームページ
 @app.route('/')
 @login_required
 def home():
     return render_template('index.html')
 
-# 資料一覧ページ
 @app.route('/documents')
 @login_required
 def documents():
