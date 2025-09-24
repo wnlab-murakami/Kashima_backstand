@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アルバイト情報サイト</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="チームロゴ" class="logo">
+        <h1>アルバイト情報サイト</h1>
+    </div>
+    <div class="container">
+        <h2>メニュー</h2>
+        <p>必要な情報をここから確認してください。</p>
+        <ul>
+            <li><a href="{{ url_for('documents') }}">資料一覧を見る</a></li>
+            <li><a href="tel:090-1234-5678">リーダーに電話する</a></li>
+        </ul>
+        <hr>
+        <a href="{{ url_for('logout') }}">ログアウトする</a>
+    </div>
+</body>
+</html>
