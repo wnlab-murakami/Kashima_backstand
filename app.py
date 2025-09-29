@@ -44,7 +44,7 @@ def documents():
     uploads_dir = os.path.join(app.static_folder, 'uploads')
     files = []
     if os.path.exists(uploads_dir):
-        supportted_extensions = {'.pdf', 'png'}
+        supportted_extensions = {'.pdf', '.png'}
         files = [f for f in os.listdir(uploads_dir) if os.path.splitext(f)[1].lower() in supportted_extensions]
     return render_template('documents.html', files=files)
 
