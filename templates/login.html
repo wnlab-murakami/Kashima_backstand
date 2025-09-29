@@ -8,14 +8,23 @@
 </head>
 <body>
     <div class="header">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="チームロゴ" class="logo">
         <h1>関係者専用ログイン</h1>
     </div>
     <div class="container">
-        <form method="post">
-            <label for="password">パスワード:</label>
-            <input type="password" id="password" name="password" required>
-            <button type="submit">ログイン</button>
-        </form>
+        <div class="card fade-in-element">
+            <form method="post" class="login-form">
+                
+                {% if error %}
+                    <p class="error-message">{{ error }}</p>
+                {% endif %}
+
+                <label for="password">パスワードを入力してください</label>
+                <input type="password" id="password" name="password" required>
+                <button type="submit" class="btn">ログイン</button>
+            </form>
+        </div>
     </div>
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 </html>

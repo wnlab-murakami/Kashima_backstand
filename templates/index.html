@@ -16,16 +16,12 @@
             <h2>メニュー</h2>
             <p>必要な情報をここから確認してください。</p>
             
-            <div class="button-group">
-                <a href="{{ url_for('backstand_entrance') }}" class="btn">バックスタンド入口</a>
-                <a href="{{ url_for('backstand_inside') }}" class="btn">バックスタンド内</a>
-                <a href="{{ url_for('third_floor_seats') }}" class="btn">ソファシート</a>
-            </div>
-
-            <div class="button-group">
-                <a href="{{ url_for('documents') }}" class="btn">資料一覧を見る</a>
-                <a href="tel:090-1234-5678" class="btn">リーダーに電話する</a>
-            </div>
+            <a href="{{ url_for('backstand_entrance') }}" class="btn">バックスタンド入口</a>
+            <a href="{{ url_for('backstand_inside') }}" class="btn">バックスタンド内</a>
+            <a href="{{ url_for('third_floor_seats') }}" class="btn">ソファシート</a>
+            <a href="{{ url_for('documents') }}" class="btn">スタジアム構造を見る</a>
+            <a href="{{ url_for('faq') }}" class="btn">よくある質問</a>
+            <a href="tel:{{phone_number}}" class="btn">リーダーに電話する</a>
         </div>
         <a href="{{ url_for('logout') }}" class="logout-link">ログアウトする</a>
     </div>

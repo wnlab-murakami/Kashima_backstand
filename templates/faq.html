@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>よくある質問一覧</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="header">
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="チームロゴ" class="logo">
+        <h1>アルバイト情報サイト</h1>
+    </div>
+    <div class="container">
+        <h2>よくある質問一覧</h2>
+        
+        <div class="card">
+            <div class="qa-item">
+                <div class="qa-question">Q. 落とし物を拾ったら？</div>
+                <div class="qa-answer">
+                    <p>A. QゲートとRゲートの間にあるファンクラブブースに預ける。どこで拾得したかメモをしておいてください。</p>
+                </div>
+            </div>
+            <div class="qa-item">
+                <div class="qa-question">Q. 再入場は可能ですか？</div>
+                <div class="qa-answer">
+                    <p>A. はい、可能です。2と5ゲートから再入場ができます。</p>
+                </div>
+            </div>
+            <div class="qa-item">
+                <div class="qa-question">Q. 迷子を発見したら？</div>
+                <div class="qa-answer">
+                    <p>A. 名前、性別、年齢、特徴を確認し、リーダーへ連絡してください。リーダーが到着するまで周囲確認を行ってください。</p>
+                </div>
+            </div>
+            <div class="qa-item">
+                <div class="qa-question">Q. お客様に座席の場所を聞かれたら？</div>
+                <div class="qa-answer">
+                    <p>A. チケットの座席番号を確認し、近くの座席案内図を指差しながら丁寧にご案内してください。不明な場合は、リーダーに確認をお願いします。</p>
+                </div>
+            </div>
+            <div class="qa-item">
+                <div class="qa-question">Q. 喫煙所の場所を聞かれたら？</div>
+                <div class="qa-answer">
+                    <p>A. カシマスポーツセンターの裏に来場者用の喫煙所があります。再入場口を出て、ジーコ像がある方角にカシマスポーツセンターがあります。</p>
+                </div>
+            </div>
+            <div class="qa-item">
+                <div class="qa-question">Q. 体調不良や怪我をされたお客様がいたら？</div>
+                <div class="qa-answer">
+                    <p>A. すぐにリーダーに連絡してください。お客様の安全を最優先し、落ち着いて対応してください。</p>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+        <a href="{{ url_for('home') }}" class="btn">ホームに戻る</a>
+        <br><br>
+        <a href="{{ url_for('logout') }}" class="logout-link">ログアウトする</a>
+    </div>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

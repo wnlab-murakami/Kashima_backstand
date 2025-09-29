@@ -19,14 +19,15 @@ def login_required(f):
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    error = None
     if request.method == 'POST':
         # 環境変数からパスワードを読み込む
         if request.form['password'] == os.environ.get('SITE_PASSWORD'):
             session['logged_in'] = True
             return redirect(url_for('home'))
         else:
-            return "パスワードが違います"
-    return render_template('login.html')
+            error = 'パスワードが正しくありません'
+    return render_template('login.html', error=error)
 
 @app.route('/logout')
 def logout():
@@ -36,7 +37,8 @@ def logout():
 @app.route('/')
 @login_required
 def home():
-    return render_template('index.html')
+    phone_number = os.environ.get('PHONE_NUMBER')
+    return render_template('index.html', phone_number=phone_number)
 
 @app.route('/documents')
 @login_required
@@ -59,10 +61,15 @@ def backstand_entrance():
 def backstand_inside():
     return render_template('backstand_inside.html')
 
-@app.route('/third_floor_seats')
+@app.route('/sofa-seat')
 @login_required
 def third_floor_seats():
-    return render_template('third_floor_seats.html')
+    return render_template('sofa-seat.html')
+
+@app.route('/faq')
+@login_required
+def faq():
+    return render_template('faq.html')
 
 
 if __name__ == '__main__':

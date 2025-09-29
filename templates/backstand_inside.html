@@ -13,11 +13,17 @@
     </div>
     <div class="container">
         <h2>バックスタンド内</h2>
-        <p>ここにバックスタンド内に関する情報を記載します。</p>
+        <p>作業内容：異なる席種間を移動していないか確認する。</p>
+        <p>試合開始30分前から片膝立ち</p>
+        <p>2か所を3人で運用する</p>
+        <p>試合終了後、座席清掃</p>
+
         <hr>
         <a href="{{ url_for('home') }}" class="btn">ホームに戻る</a>
         <br><br>
         <a href="{{ url_for('logout') }}" class="logout-link">ログアウトする</a>
     </div>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
 </body>
 </html>
