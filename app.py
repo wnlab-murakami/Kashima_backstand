@@ -44,8 +44,26 @@ def documents():
     uploads_dir = os.path.join(app.static_folder, 'uploads')
     files = []
     if os.path.exists(uploads_dir):
-        files = os.listdir(uploads_dir)
+        supportted_extensions = {'.pdf', 'png'}
+        files = [f for f in os.listdir(uploads_dir) if os.path.splitext(f)[1].lower() in supportted_extensions]
     return render_template('documents.html', files=files)
+
+# 新しく追加するルート
+@app.route('/backstand_entrance')
+@login_required
+def backstand_entrance():
+    return render_template('backstand_entrance.html')
+
+@app.route('/backstand_inside')
+@login_required
+def backstand_inside():
+    return render_template('backstand_inside.html')
+
+@app.route('/third_floor_seats')
+@login_required
+def third_floor_seats():
+    return render_template('third_floor_seats.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0')

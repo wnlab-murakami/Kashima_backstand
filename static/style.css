@@ -82,3 +82,16 @@ a:hover {
     color: #666;
     font-weight: normal;
 }
+
+.button-group {
+    display: flex; 
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.button-group .btn {
+    flex-grow: 1;
+    margin: 0;
+}

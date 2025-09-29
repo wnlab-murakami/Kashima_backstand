@@ -2,9 +2,23 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale-1.0">
     <title>資料一覧</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* 資料画像のスタイルを追加 */
+        .document-image {
+            width: 100%;
+            max-width: 600px; /* 画像の最大幅を指定 */
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+    </style>
 </head>
 <body>
     <div class="header">
@@ -15,16 +29,15 @@
         <h2>資料一覧</h2>
         
         {% for file in files %}
-            <div class="pdf-viewer">
-                <h3>{{ file }}</h3>
-                <iframe src="{{ url_for('static', filename='uploads/' + file) }}" width="100%" height="700px"></iframe>
-            </div>
+            <h3>{{ file }}</h3>
+            <img src="{{ url_for('static', filename='uploads/' + file) }}" alt="{{ file }}" class="document-image">
         {% else %}
-            <p>アップロードされているファイルはありません。</p>
+            <p>表示できる資料画像はありません。</p>
         {% endfor %}
-
+        
         <hr>
         <a href="{{ url_for('home') }}" class="btn">ホームに戻る</a>
+        <br><br>
         <a href="{{ url_for('logout') }}" class="logout-link">ログアウトする</a>
     </div>
 </body>
