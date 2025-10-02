@@ -3,7 +3,9 @@ from sentence_transformers import SentenceTransformer
 import numpy as np
 
 # 1. モデルの読み込み（日本語に強いモデルを選択）
-model = SentenceTransformer('stsb-xlm-r-multilingual')
+# model = SentenceTransformer('stsb-xlm-r-multilingual')
+# より軽量な日本語モデルに変更
+model = SentenceTransformer('pkshatech/GLuCoSE-base-ja')
 
 # 2. Q&Aデータの読み込み
 df = pd.read_csv('qa_data.csv')

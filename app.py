@@ -22,7 +22,8 @@ LOG_FILE = 'logged_questions.csv'
 # --- AIモデルとデータの読み込み（サーバー起動時に一度だけ実行）---
 try:
     # モデルの読み込み
-    model = SentenceTransformer('stsb-xlm-r-multilingual')
+    # model = SentenceTransformer('stsb-xlm-r-multilingual')
+    model = SentenceTransformer('pkshatech/GLuCoSE-base-ja')
     # ベクトルデータの読み込み
     question_vectors = np.load('question_vectors.npy')
     # Q&Aデータの読み込み
