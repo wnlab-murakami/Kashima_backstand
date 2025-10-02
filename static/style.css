@@ -183,3 +183,17 @@ hr {
     border-top: 2px solid #333; /* 2pxの太さの黒い線 */
     margin: 25px 0; /* 上下の余白を調整 */
 }
+
+/* ★★★ AI質問フォームのtextareaスタイルを追加 ★★★ */
+.login-form textarea {
+    width: 100%;
+    max-width: 600px; /* 横幅を広くする */
+    min-height: 80px; /* 縦幅を広げる */
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 1em; /* フォントサイズを調整 */
+    resize: vertical; /* 縦方向のリサイズのみ許可 */
+    font-family: 'Noto Sans JP', sans-serif; /* フォントを統一 */
+}
