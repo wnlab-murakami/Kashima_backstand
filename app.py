@@ -50,9 +50,20 @@ def home():
 def documents():
     uploads_dir = os.path.join(app.static_folder, 'uploads')
     files = []
+    
+    # ▼▼▼ 1. ここに「一覧に出したくないファイル名」を書きます ▼▼▼
+    excluded_files = ['Entrance_backstand.png', 'Inside_backstand.png']
+
     if os.path.exists(uploads_dir):
         supportted_extensions = {'.pdf', '.png'}
-        files = [f for f in os.listdir(uploads_dir) if os.path.splitext(f)[1].lower() in supportted_extensions]
+        
+        # ▼▼▼ 2. 「除外リストに含まれていない(not in)」という条件を追加しました ▼▼▼
+        files = [
+            f for f in os.listdir(uploads_dir) 
+            if os.path.splitext(f)[1].lower() in supportted_extensions 
+            and f not in excluded_files
+        ]
+        
     return render_template('documents.html', files=files)
 
 # 新しく追加するルート
