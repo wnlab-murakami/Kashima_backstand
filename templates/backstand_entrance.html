@@ -6,17 +6,35 @@
     <title>バックスタンド入口</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
-        /* documents.html の .document-image と同じスタイル */
-        .pdf-viewer {
-            width: 100%;
-            max-width: 600px;
-            height: 600px; /* PDFは高さ指定が必要 */
+        /* 画像表示用のスタイル */
+        .manual-image {
+            width: 100%;           /* 親要素の幅いっぱいに表示 */
+            height: auto;          /* 高さは比率を維持して自動調整 */
+            max-width: 800px;      /* PCで見えすぎないように最大幅を制限 */
+            display: block;
+            margin: 0 auto 15px auto; /* 中央寄せと下部の余白 */
             border: 1px solid #ddd;
             border-radius: 8px;
-            margin-bottom: 20px;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); /* 軽く影をつける */
+        }
+        
+        /* ダウンロードボタンのスタイル */
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            color: #333;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 0.9em;
+            border: 1px solid #ccc;
+            transition: all 0.3s ease;
+        }
+        .download-btn:hover {
+            background-color: #e2e6ea;
+            border-color: #adb5bd;
         }
     </style>
 </head>
@@ -32,8 +50,10 @@
         <p>階段の反対側に立ってチケット確認を行う。</p>
         <p>OとPゲートはアウェイチームのグッズを身に着けた方は入れない。</p>
 
-        <iframe src="{{ url_for('static', filename='pdf_files/Entrance_backstand.pdf') }}#toolbar=0&navpanes=0" class="pdf-viewer" frameborder="0"></iframe>
-
+        <h3>配置図・マニュアル</h3>
+        
+        <img src="{{ url_for('static', filename='uploads/Entrance_backstand.png') }}" alt="配置図・マニュアル" class="manual-image">
+        
         <hr>
 
         <p>キックオフ1時間前、ハーフタイム、試合終了5分前は2人体制で対応する</p>
