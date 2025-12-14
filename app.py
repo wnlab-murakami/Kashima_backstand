@@ -9,7 +9,6 @@ from sklearn.metrics.pairwise import cosine_similarity
 import csv
 from datetime import datetime
 import pytz
-
 load_dotenv() # .envファイルを読み込む
 
 app = Flask(__name__)
