@@ -43,17 +43,17 @@
         <h1>アルバイト情報サイト</h1>
     </div>
     <div class="container">
-        <h2>バックスタンド内</h2>
-        <p>作業内容：異なる席種間を移動していないか確認する。</p>
-        <p>試合開始30分前から片膝立ち</p>
-        <p>2か所を3人で運用する</p>
-        <p>試合終了後、座席清掃</p>
+        <header><h2>バックスタンド内</h2></header>
+
+        <p>下記マニュアルを確認して、休憩時間を調整してください。</p>
+        <p>優先入場10分前から配置についてください。</p>
+        <p>わからないことや質問があれば、リーダーに連絡をしてください。</p>
+        <hr>
 
         <h3>配置図・マニュアル</h3>
         
         <img src="{{ url_for('static', filename='uploads/Inside_backstand.png') }}" alt="配置図・マニュアル" class="manual-image">
         
-        <hr>
         <a href="{{ url_for('home') }}" class="btn">ホームに戻る</a>
         <br><br>
         <a href="{{ url_for('logout') }}" class="logout-link">ログアウトする</a>
