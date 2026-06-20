@@ -118,6 +118,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    text-align: center;
 }
 
 /* 矢印のスタイル */
@@ -138,6 +139,12 @@ body {
     background-color: #fff;
     display: none; /* 初期状態では答えを隠す */
     border-top: 1px solid #ddd;
+}
+
+li {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-height: 1.8;
 }
 
 /*ログインフォーム用のスタイルを追加*/
@@ -176,12 +183,41 @@ body {
 
 p {
     word-wrap: break-word;
+    word-break: keep-all;      /* 追加：文節の途中で折り返さない */
+    overflow-wrap: break-word; /* 追加：どうしても長い場合だけ折り返す */
+    line-height: 1.8;          /* 任意：行間を広げると読みやすくなる */
 }
 
 hr {
     border: none; /* 元の線をリセット */
     border-top: 2px solid #333; /* 2pxの太さの黒い線 */
     margin: 25px 0; /* 上下の余白を調整 */
+}
+
+.card h3 {
+    color: #1A2753;
+    font-size: 1em;
+    margin-top: 15px;
+    margin-bottom: 5px;
+}
+
+@media (max-width: 600px) {
+    .header h1 {
+        font-size: 1.4em;
+    }
+
+    body {
+        font-size: 0.95em;
+    }
+
+    .btn {
+        padding: 10px 16px;
+        font-size: 0.95em;
+    }
+
+    .card {
+        padding: 15px;
+    }
 }
 
 /* ★★★ AI質問フォームのtextareaスタイルを追加 ★★★ */
