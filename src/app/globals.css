@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#f0f2f5] font-sans text-[#333];
+  }
+
+  li {
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-height: 1.8;
+  }
+
+  p {
+    word-wrap: break-word;
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    line-height: 1.8;
+  }
+
+  summary {
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+}
