@@ -22,7 +22,7 @@ export default function BackstandEntrancePage() {
           <li>試合終了後、座席清掃をおこないます。</li>
         </ul>
         <hr className="border-0 border-t-2 border-[#333] my-6" />
-        <ManualImage src="/uploads/2022guidemap1.png" alt="スタジアム図" />
+        <ManualImage src="/uploads/2022guidemap-1.png" alt="スタジアム図" />
         <hr className="border-0 border-t-2 border-[#333] my-6" />
         <ManualImage src="/uploads/Entrance_backstand.webp" alt="配置図・マニュアル" />
         <BackButton />
