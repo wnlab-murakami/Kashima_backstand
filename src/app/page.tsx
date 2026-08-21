@@ -5,6 +5,8 @@ const menuItems = [
   { href: "/backstand-entrance", label: "バックスタンド入口" },
   { href: "/backstand-inside", label: "バックスタンド内" },
   { href: "/sofa-seat", label: "ソファシート" },
+  { href: "/seat-arrangement-pr", label: "席詰め広報" },
+  { href: "/trash-station", label: "ゴミステーション" },
   { href: "/documents", label: "スタジアム構造を見る" },
   { href: "/faq", label: "よくある質問" },
 ];
