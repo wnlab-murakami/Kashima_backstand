@@ -24,14 +24,16 @@ export default function BackstandEntrancePage() {
         </ul>
         <hr className="border-0 border-t-2 border-[#333] my-6" />
         <h3 className="text-[#1A2753] font-bold mb-2">準備</h3>
-        <p>（ここに説明を記入してください）</p>
+        <p>各自休憩時間を決めてください。（例：1人30分休憩、昼食時45分休憩など）</p>
         <hr className="border-0 border-t-2 border-[#333] my-6" />
         <h3 className="text-[#1A2753] font-bold mb-2">終了後</h3>
         <p>試合終了後、スタンド内のごみ拾いを行います。</p>
         <hr className="border-0 border-t-2 border-[#333] my-6" />
-        <ManualImage src="/uploads/2022guidemap-1.png" alt="スタジアム図" />
+        <ManualImage src="/uploads/2022guidemap-1.webp" alt="スタジアム図" />
         <hr className="border-0 border-t-2 border-[#333] my-6" />
         <ManualImage src="/uploads/Entrance_backstand.webp" alt="配置図・マニュアル" />
+        <hr className="border-0 border-t-2 border-[#333] my-6" />
+        <ManualImage src="/uploads/socio_membercard.webp" alt="ソシオ会員証" />
         <BackButton />
       </div>
     </>

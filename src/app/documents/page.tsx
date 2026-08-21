@@ -4,7 +4,7 @@ import Image from "next/image";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
 
-const EXCLUDED_FILES = ["Entrance_backstand.webp", "Inside_backstand.webp"];
+const EXCLUDED_FILES = ["Entrance_backstand.webp", "Inside_backstand.webp", "socio_membercard.webp"];
 const SUPPORTED_EXTENSIONS = [".png", ".webp"];
 
 export default function DocumentsPage() {
