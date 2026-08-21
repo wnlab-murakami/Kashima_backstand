@@ -7,7 +7,8 @@ export default function SofaSeatPage() {
       <Header />
       <div className="max-w-3xl mx-auto px-5 py-5">
         <h2 className="text-[#1A2753] text-2xl font-bold mb-4">ソファシート</h2>
-        <p>業務内容：お客様のチケットを確認する</p>
+        <h3 className="text-[#1A2753] font-bold mb-2">業務内容</h3>
+        <p>お客様のチケットを確認する</p>
         <p>ソファシートとゆったりシートのチケット所持者のみ通過させる</p>
         <p>
           こども広場は親と未就学児の同伴であれば上記のチケットなしでも利用可能。人数制限あり（10組20名程度）
