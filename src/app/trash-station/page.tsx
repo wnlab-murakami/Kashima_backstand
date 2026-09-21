@@ -6,7 +6,7 @@ export default function TrashStationPage() {
     <>
       <Header />
       <div className="max-w-3xl mx-auto px-5 py-5">
-        <h2 className="text-[#1A2753] text-2xl font-bold mb-4">エコステーション</h2>
+        <h2 className="text-[#1A2753] text-2xl font-bold mb-4 text-center">エコステーション</h2>
         <h3 className="text-[#1A2753] text-lg font-bold mb-2">業務内容</h3>
         <p>ファンクラブブース前の白いテントの中にて、お客様のゴミを回収します。分別方法が分かれているので注意してください。
           ゴミが溜まり次第、ゴミ袋の入れ替えを行う。

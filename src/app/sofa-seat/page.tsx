@@ -6,7 +6,7 @@ export default function SofaSeatPage() {
     <>
       <Header />
       <div className="max-w-3xl mx-auto px-5 py-5">
-        <h2 className="text-[#1A2753] text-2xl font-bold mb-4">ソファシート</h2>
+        <h2 className="text-[#1A2753] text-2xl font-bold mb-4 text-center">ソファシート</h2>
         <h3 className="text-[#1A2753] text-lg font-bold mb-2">業務内容</h3>
         <p>お客様のチケットを確認する</p>
         <p>ソファシートとゆったりシートのチケット所持者のみ通過させる</p>

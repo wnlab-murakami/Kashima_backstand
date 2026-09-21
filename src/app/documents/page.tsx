@@ -24,8 +24,8 @@ export default function DocumentsPage() {
     <>
       <Header />
       <div className="max-w-3xl mx-auto px-5 py-5">
-        <h2 className="text-[#1A2753] text-2xl font-bold mb-4">
-          スタジアム構造一覧
+        <h2 className="text-[#1A2753] text-2xl font-bold mb-4 text-center">
+          スタジアムマップ
         </h2>
         {files.length > 0 ? (
           <div className="flex flex-col items-center gap-5">

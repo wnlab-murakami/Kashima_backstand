@@ -6,7 +6,7 @@ export default function SeatArrangementPrPage() {
     <>
       <Header />
       <div className="max-w-3xl mx-auto px-5 py-5">
-        <h2 className="text-[#1A2753] text-2xl font-bold mb-4">席詰め広報</h2>
+        <h2 className="text-[#1A2753] text-2xl font-bold mb-4 text-center">席詰め広報</h2>
         <h3 className="text-[#1A2753] text-lg font-bold mb-2">業務内容</h3>
         <p>イーストゾーン（自由席）を看板を持って巡回する。入場開始時刻から巡回を開始してください。
           特に入場開始から1時間と試合開始前の30分は混雑するので、巡回を重点的に行う。

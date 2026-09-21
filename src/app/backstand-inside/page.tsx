@@ -7,7 +7,7 @@ export default function BackstandInsidePage() {
     <>
       <Header />
       <div className="max-w-3xl mx-auto px-5 py-5">
-        <h2 className="text-[#1A2753] text-2xl font-bold mb-4">バックスタンド内</h2>
+        <h2 className="text-[#1A2753] text-2xl font-bold mb-4 text-center">バックスタンド内</h2>
         <h3 className="text-[#1A2753] text-lg font-bold mb-2">業務内容</h3>
         <p>下記マニュアルを確認して、休憩時間を調整してください。</p>
         <p>入場開始時刻の10分前から配置についてください。</p>

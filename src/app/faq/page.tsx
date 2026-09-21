@@ -39,7 +39,7 @@ export default function FaqPage() {
     <>
       <Header />
       <div className="max-w-3xl mx-auto px-5 py-5">
-        <h2 className="text-[#1A2753] text-2xl font-bold mb-4">
+        <h2 className="text-[#1A2753] text-2xl font-bold mb-4 text-center">
           よくある質問一覧
         </h2>
         <div className="bg-white rounded-xl shadow-md p-5 mb-4">

@@ -8,7 +8,7 @@ export default function BackstandEntrancePage() {
       <Header />
       <div className="max-w-3xl mx-auto px-5 py-5">
         <h2 className="text-[#1A2753] text-2xl font-bold text-center mb-2">
-          バックスタンド下層入口
+          バックスタンド入口
         </h2>
         <h3 className="text-[#1A2753] text-lg font-bold mb-2">業務内容</h3>
         <h3 className="text-center text-lg font-bold mb-4">
@@ -25,8 +25,9 @@ export default function BackstandEntrancePage() {
         <h3 className="text-[#1A2753] text-lg font-bold mb-2">準備</h3>
         <p>各自休憩時間を決めてください。（例：1人30分休憩、昼食時45分休憩など）</p>
         <hr className="border-0 border-t-2 border-[#333] my-6" />
-        <h3 className="text-[#1A2753] text-lg font-bold mb-2">終了後</h3>
-        <p>試合終了後、スタンド内のごみ拾いを行います。</p>
+        <h3 className="text-[#1A2753] text-lg font-bold mb-2">試合終了後</h3>
+        <p>2階と4階のスタンド内のごみ拾いを行います。</p>
+        <p>ごみ拾いで使用する袋は後半開始後に配布します。</p>
         <hr className="border-0 border-t-2 border-[#333] my-6" />
         <ManualImage src="/uploads/2022guidemap-1.webp" alt="スタジアム図" />
         <hr className="border-0 border-t-2 border-[#333] my-6" />
