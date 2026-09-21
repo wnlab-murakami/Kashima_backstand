@@ -1,11 +1,18 @@
 import fs from "fs";
 import path from "path";
-import Image from "next/image";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
+import ImageGallery from "@/components/ImageGallery";
 
 const EXCLUDED_FILES = ["Entrance_backstand.webp", "Inside_backstand.webp", "socio_membercard.webp"];
-const SUPPORTED_EXTENSIONS = [".png", ".webp"];
+const SUPPORTED_EXTENSIONS = [".webp"];
+
+const FILE_LABELS: Record<string, string> = {
+  "2022guidemap-1.webp": "座席案内（LEXUS ROOM・VIEW BOX等）",
+  "2026-07Seat.webp": "座席カテゴリー図",
+  "mercari-stadium1.webp": "座席番号・ブロック図",
+  "z_26stadium260813-1.webp": "座席カテゴリー・番号詳細図",
+};
 
 export default function DocumentsPage() {
   const uploadsDir = path.join(process.cwd(), "public", "uploads");
@@ -28,18 +35,7 @@ export default function DocumentsPage() {
           スタジアムマップ
         </h2>
         {files.length > 0 ? (
-          <div className="flex flex-col items-center gap-5">
-            {files.map((file) => (
-              <Image
-                key={file}
-                src={`/uploads/${file}`}
-                alt={file}
-                width={600}
-                height={400}
-                className="w-full max-w-[600px] h-auto border border-gray-200 rounded-lg"
-              />
-            ))}
-          </div>
+          <ImageGallery files={files} labels={FILE_LABELS} />
         ) : (
           <p>表示できる資料画像はありません。</p>
         )}
