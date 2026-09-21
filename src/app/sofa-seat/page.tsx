@@ -19,10 +19,9 @@ export default function SofaSeatPage() {
         <p>各シートカバーを取り外し、収納BOXに入れる。</p>
         <p>※シートカバーベルトがあるものは一緒に収納する。</p>
         <hr className="border-0 border-t-2 border-[#333] my-6" />
-        <h3 className="text-[#1A2753] text-lg font-bold mb-2">終了後</h3>
+        <h3 className="text-[#1A2753] text-lg font-bold mb-2">試合終了後</h3>
         <p>収納BOXからシートカバーを取り出し、各シートにかける。</p>
         <p>※シートカバーベルトがついていたシートにベルトを戻す。</p>
-        <p>座席清掃を行う。</p>
         <BackButton />
       </div>
     </>

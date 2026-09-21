@@ -19,8 +19,9 @@ export default function TrashStationPage() {
         <h3 className="text-[#1A2753] text-lg font-bold mb-2">運用時間</h3>
         <p>開場から試合終了後30分程度まで。試合終了後は、ゴミの回収を行い、分別用の袋を片付けてください。</p>
         <hr className="border-0 border-t-2 border-[#333] my-6" />
-        <h3 className="text-[#1A2753] text-lg font-bold mb-2">終了後</h3>
-        <p>業務終了後は、エコステーションの前でお待ちください。</p>
+        <h3 className="text-[#1A2753] text-lg font-bold mb-2">試合終了後</h3>
+        <p>お客様が少なくなるまでゴミを回収します。</p>
+        <p>エコステーションのごみ袋を5ゲート下の収集所に運びます。</p>
         <BackButton />
       </div>
     </>

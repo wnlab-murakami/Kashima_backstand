@@ -24,9 +24,8 @@ export default function LeaderManualPage() {
         <h3 className="text-[#1A2753] text-lg font-bold mb-2">設営</h3>
         <ul className="pl-5 mb-4">
           <li>5ゲートと3ゲートのトラメガの設置</li>
-          <li>正面玄関の柵の移動</li>
-          <li>緑ボックスの移動</li>
           <li>医務室の椅子の設置</li>
+          <li>メインスタンドのエグゼクティブシートのカバー外し</li>
         </ul>
 
         <hr className="border-0 border-t-2 border-[#333] my-6" />
@@ -34,7 +33,7 @@ export default function LeaderManualPage() {
         <h3 className="text-[#1A2753] text-lg font-bold mb-2">所持する鍵</h3>
         <ul className="pl-5 mb-4">
           <li>本部から→132（授乳室）、188（4F医務室）、197（4F医務室）</li>
-          <li>管理事務所から→191（4F倉庫）</li>
+          <li>管理事務所から→191（4F倉庫）、177(メインスタンド用)</li>
           <li>控え室から→224F（南京錠のカギ、小さいカギだけついてるもの）</li>
         </ul>
 
@@ -68,7 +67,7 @@ export default function LeaderManualPage() {
             後半になったら、スタンド入口とスタンド内の方々にゴミ拾い用のビニール袋の配布をする。
           </li>
           <li>
-            試合終了前にイーストゾーンの入り口のバナーを外して、柵を開けておく。バナーは倉庫に撤収。
+            試合終了前にイーストゾーンの入り口のバナーを外して、柵を開けておく。バナーは4階倉庫に撤収。
           </li>
           <li>
             試合終了後、2階キッズエリアのリストと売上金を回収する。鍵返却時に本部に直接持っていくので4階の部屋に保管しておく。
