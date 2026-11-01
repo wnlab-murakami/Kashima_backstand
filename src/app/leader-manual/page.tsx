@@ -1,5 +1,10 @@
+import Link from "next/link";
 import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
+
+export const metadata = {
+  robots: { index: false, follow: false },
+};
 
 const memoFields = [
   "現在地",
@@ -21,6 +26,19 @@ export default function LeaderManualPage() {
         <h2 className="text-[#1A2753] text-2xl font-bold text-center mb-2">
           リーダーマニュアル
         </h2>
+        <h3 className="text-[#1A2753] text-lg font-bold mb-2">配置入力</h3>
+        <p className="text-sm text-gray-600 mb-2">
+          入力した配置は、ホーム画面の「本日の配置」に表示されます。
+        </p>
+        <Link
+          href="/leader-manual/placement"
+          className="block bg-[#1A2753] text-white px-5 py-3 rounded-lg font-bold text-center no-underline hover:bg-[#2c3e8a] hover:-translate-y-0.5 transition-all mb-4"
+        >
+          本日の配置を入力する
+        </Link>
+
+        <hr className="border-0 border-t-2 border-[#333] my-6" />
+
         <h3 className="text-[#1A2753] text-lg font-bold mb-2">設営</h3>
         <ul className="pl-5 mb-4">
           <li>5ゲートと3ゲートのトラメガの設置</li>
