@@ -30,8 +30,6 @@ export default async function PlacementEditPage() {
           updatedAt={placement?.updatedAt ?? null}
         />
 
-        <hr className="border-0 border-t-2 border-[#333] my-6" />
-
         <BackButton />
       </div>
     </>

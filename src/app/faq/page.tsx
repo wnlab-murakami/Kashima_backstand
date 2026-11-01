@@ -10,7 +10,7 @@ const faqItems = [
   },
   {
     question: "Q. 再入場は可能ですか？",
-    answer: "A. はい、可能です。1,2,5,6ゲートから再入場ができます。",
+    answer: "A. 可能です。1,2,5,6ゲートから再入場ができます。",
   },
   {
     question: "Q. 迷子を発見したら？",
@@ -32,6 +32,11 @@ const faqItems = [
     answer:
       "A. すぐにリーダーに連絡してください。お客様の安全を最優先し、落ち着いて対応してください。",
   },
+  {
+    question: "Q. WAONカードはどこで買える？",
+    answer:
+      "A. バックスタンドファンクラブブースで購入可能です。",
+  },
 ];
 
 export default function FaqPage() {
@@ -45,6 +50,9 @@ export default function FaqPage() {
         <div className="bg-white rounded-xl shadow-md p-5 mb-4">
           <FaqAccordion items={faqItems} />
         </div>
+        
+        <hr className="my-4" />
+
         <BackButton />
       </div>
     </>

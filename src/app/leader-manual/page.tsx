@@ -166,9 +166,9 @@ export default function LeaderManualPage() {
           ))}
         </div>
 
-        <hr className="border-0 border-t-2 border-[#333] my-6" />
-
-        <BackButton />
+        <div className="mt-6">
+          <BackButton />
+        </div>
       </div>
     </>
   );

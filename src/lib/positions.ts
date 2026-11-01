@@ -38,7 +38,10 @@ export const POSITION_AREAS = [
     id: "inside",
     label: "スタンド内",
     href: "/backstand-inside",
-    positions: [{ id: "inside", label: "スタンド内" }],
+    positions: [
+      { id: "inside_north", label: "スタンド内(北)" }, 
+      { id: "inside_south", label: "スタンド内(南)" }
+    ],
   },
   {
     id: "sofa",

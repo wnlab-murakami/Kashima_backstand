@@ -4,7 +4,7 @@ import Header from "@/components/Header";
 import BackButton from "@/components/BackButton";
 import ImageGallery from "@/components/ImageGallery";
 
-const EXCLUDED_FILES = ["Entrance_backstand.webp", "Inside_backstand.webp", "socio_membercard.webp"];
+const EXCLUDED_FILES = ["Entrance_backstand.webp", "Inside_backstand.webp", "socio_membercard.webp", "backstand_inside.webp"];
 const SUPPORTED_EXTENSIONS = [".webp"];
 
 const FILE_LABELS: Record<string, string> = {
@@ -39,7 +39,7 @@ export default function DocumentsPage() {
         ) : (
           <p>表示できる資料画像はありません。</p>
         )}
-        <hr className="border-0 border-t-2 border-[#333] my-6" />
+        <hr className="my-6" />
         <BackButton />
       </div>
     </>
