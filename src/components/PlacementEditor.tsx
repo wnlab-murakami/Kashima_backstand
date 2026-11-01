@@ -109,6 +109,36 @@ export default function PlacementEditor({
     }));
   }
 
+  function clearArea(area: (typeof POSITION_AREAS)[number]) {
+    const hasAny = area.positions.some((p) => (state[p.id]?.length ?? 0) > 0);
+    if (!hasAny) return;
+    if (!window.confirm(`「${area.label}」の入力を全て削除します。よろしいですか？`)) {
+      return;
+    }
+    setState((prev) => {
+      const next = { ...prev };
+      for (const position of area.positions) {
+        next[position.id] = [];
+      }
+      return next;
+    });
+  }
+
+  function clearAllAreas() {
+    const hasAny = Object.values(state).some((rows) => rows.length > 0);
+    if (!hasAny) return;
+    if (!window.confirm("全てのエリアの入力を削除します。よろしいですか？")) {
+      return;
+    }
+    setState((prev) => {
+      const next: EditorState = {};
+      for (const positionId of Object.keys(prev)) {
+        next[positionId] = [];
+      }
+      return next;
+    });
+  }
+
   function handleSave() {
     submit({ date, assignments: toPayload(state) });
   }
@@ -130,13 +160,34 @@ export default function PlacementEditor({
         <p className="text-xs text-gray-500 mb-3">最終更新: {lastSavedLabel}</p>
       )}
 
+      <button
+        type="button"
+        onClick={clearAllAreas}
+        className="w-full mb-3 border border-[#A70028] text-[#A70028] rounded-lg py-2 font-bold hover:bg-[#A70028]/5"
+      >
+        全て削除
+      </button>
+
       <div className="space-y-2 mb-4">
         {POSITION_AREAS.map((area) => (
           <details key={area.id} className="border border-gray-200 rounded-lg overflow-hidden group" open>
             <summary className="bg-gray-50 px-4 py-3 cursor-pointer font-bold flex justify-between items-center list-none text-[#1A2753]">
               <span>{area.label}</span>
-              <span className="text-sm transition-transform duration-300 group-open:rotate-180">
-                ▼
+              <span className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    clearArea(area);
+                  }}
+                  className="text-xs font-normal border border-gray-300 rounded px-2 py-1 text-gray-600 hover:bg-gray-100"
+                >
+                  このエリアを削除
+                </button>
+                <span className="text-sm transition-transform duration-300 group-open:rotate-180">
+                  ▼
+                </span>
               </span>
             </summary>
             <div className="px-4 py-4 bg-white border-t border-gray-200 space-y-4">
