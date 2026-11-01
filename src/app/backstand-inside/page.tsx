@@ -17,11 +17,11 @@ export default function BackstandInsidePage() {
         <p>休憩時間を各自決めてください。（例：1人30分休憩、昼食時45分休憩など）</p>
         <hr className="border-0 border-t-2 border-[#333] my-6" />
         <h3 className="text-[#1A2753] text-lg font-bold mb-2">試合終了後</h3>
-        <p>2階4階のスタンド内のごみ拾いを行います。</p>
+        <p>2階と4階のスタンド内のごみ拾いを行います。</p>
         <p>ごみ拾いで使用する袋は後半開始後に配布します。</p>
         <hr className="border-0 border-t-2 border-[#333] my-6" />
-        <h3 className="text-[#1A2753] text-lg font-bold mb-2">配置図・マニュアル</h3>
-        <ManualImage src="/uploads/Inside_backstand.webp" alt="配置図・マニュアル" />
+        <h3 className="text-[#1A2753] text-lg font-bold mb-2">配置図</h3>
+        <ManualImage src="/uploads/backstand_inside.webp" alt="配置図" />
         <BackButton />
       </div>
     </>

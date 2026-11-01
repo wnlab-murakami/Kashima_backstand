@@ -10,11 +10,13 @@ export default function BackstandEntrancePage() {
         <h2 className="text-[#1A2753] text-2xl font-bold text-center mb-2">
           バックスタンド入口
         </h2>
-        <h3 className="text-[#1A2753] text-lg font-bold mb-2">業務内容</h3>
         <h3 className="text-center text-lg font-bold mb-4">
           下記を確認し、ペアで業務を行ってください。
+        <hr className="border-0 border-t-2 border-[#333] my-6" />
+        <h3 className="text-[#1A2753] text-lg font-bold mb-2">業務内容</h3>
         </h3>
         <ul className="pl-5 mb-4">
+          <li>チケット確認を行う。</li>
           <li>階段の反対側に立ってチケット確認を行う。</li>
           <li>OとPゲートはアウェイチームのグッズを身に着けた方は入れないので注意してください。</li>
           <li>入場開始の10分前から配置に付いてください。</li>
