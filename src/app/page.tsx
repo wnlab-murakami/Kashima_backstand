@@ -1,5 +1,9 @@
+import { Suspense } from "react";
 import Link from "next/link";
 import Header from "@/components/Header";
+import TodayPlacement from "@/components/TodayPlacement";
+
+export const dynamic = "force-dynamic";
 
 const menuItems = [
   { href: "/backstand-entrance", label: "スタンド入口" },
@@ -30,6 +34,10 @@ export default function Home() {
             <li>緊急事態以外での配置場所の離脱禁止</li>
           </ul>
         </div>
+
+        <Suspense fallback={null}>
+          <TodayPlacement />
+        </Suspense>
 
         <h2 className="text-[#1A2753] text-xl font-bold mt-5 mb-2 text-center">メニュー</h2>
         <p className="mb-4">配置場所の情報を確認してください。</p>
