@@ -12,6 +12,7 @@ const menuItems = [
   { href: "/seat-arrangement-pr", label: "席詰め広報" },
   { href: "/trash-station", label: "エコステーション" },
   { href: "/documents", label: "マップ" },
+  { href: "/backstand-3dmap", label: "3Dマップ" },
   { href: "/faq", label: "よくある質問" },
 ];
 

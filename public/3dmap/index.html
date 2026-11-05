@@ -1,0 +1,1093 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>バックスタンド3Dマップ</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=DM+Mono:wght@400;500&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: 3D stage on the left, control panel on the right; stacks on phones.
+   Palette: pitch-side neutrals with a green bias, Antlers crimson as the one accent, amber for the selected seat. */
+:root{
+  --bg:#EDEFEA; --panel:#F7F8F4; --fg:#17201C; --muted:#5A655E; --line:#D2D8D1;
+  --accent:#B3202A; --accent-ink:#FFFFFF; --hi:#E2A21E; --hud:rgba(247,248,244,.84);
+  --font-display:"Dela Gothic One","Hiragino Sans","Yu Gothic",sans-serif;
+  --font-body:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",system-ui,sans-serif;
+  --font-mono:"DM Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --s-bg:#DDE4DE; --s-ground:#C3CCC4; --s-concrete:#A9B1AB; --s-ghost:#8F9A93;
+  --s-seat1:#C8343C; --s-seat2:#8E1F2A; --s-dim:#B7BDB8; --s-hi:#F0B429;
+  --s-pitchA:#4B9A56; --s-pitchB:#459150; --s-roof:#E9EEEA; --s-label:#17201C; --s-line:#F5F7F4;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1311; --panel:#151C19; --fg:#E6ECE7; --muted:#92A09A; --line:#28332E;
+    --accent:#E0555D; --accent-ink:#1A0A0C; --hi:#F2B94B; --hud:rgba(21,28,25,.84);
+    --s-bg:#0A100E; --s-ground:#121A17; --s-concrete:#3F4A45; --s-ghost:#5C6963;
+    --s-seat1:#D4474F; --s-seat2:#962B36; --s-dim:#2E3732; --s-hi:#F2B94B;
+    --s-pitchA:#2F6B39; --s-pitchB:#2B6335; --s-roof:#56625C; --s-label:#E6ECE7; --s-line:#DCE4DE;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0E1311; --panel:#151C19; --fg:#E6ECE7; --muted:#92A09A; --line:#28332E;
+  --accent:#E0555D; --accent-ink:#1A0A0C; --hi:#F2B94B; --hud:rgba(21,28,25,.84);
+  --s-bg:#0A100E; --s-ground:#121A17; --s-concrete:#3F4A45; --s-ghost:#5C6963;
+  --s-seat1:#D4474F; --s-seat2:#962B36; --s-dim:#2E3732; --s-hi:#F2B94B;
+  --s-pitchA:#2F6B39; --s-pitchB:#2B6335; --s-roof:#56625C; --s-label:#E6ECE7; --s-line:#DCE4DE;
+  color-scheme:dark;
+}
+
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--fg);
+  font:14px/1.65 var(--font-body);
+  padding-block:12px;
+  padding-left:max(16px,env(safe-area-inset-left,0px));
+  padding-right:max(16px,env(safe-area-inset-right,0px));
+  box-sizing:border-box;
+}
+.app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:12px}
+.stage{position:relative;min-height:0;min-width:0;border-radius:10px;overflow:hidden;background:var(--s-bg);border:1px solid var(--line)}
+#c{display:block;width:100%;height:100%;touch-action:none;outline:none;cursor:grab}
+#c:active{cursor:grabbing}
+#c:focus-visible{outline:2px solid var(--hi);outline-offset:-2px}
+.hud{position:absolute;left:10px;top:10px;display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;background:var(--hud);font:500 12px/1 var(--font-mono);letter-spacing:.04em;pointer-events:none}
+.hud i{width:8px;height:8px;border-radius:50%;background:var(--accent);display:block}
+.hint{position:absolute;left:10px;bottom:10px;right:10px;padding:6px 10px;border-radius:6px;background:var(--hud);font:400 11.5px/1.5 var(--font-body);color:var(--muted);pointer-events:none;width:fit-content;max-width:calc(100% - 20px)}
+.fail{padding:24px;font-size:14px}
+
+.panel{min-height:0;min-width:0;overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:20px 18px 24px;display:flex;flex-direction:column;gap:22px}
+.eyebrow{font:500 11px/1.4 var(--font-mono);letter-spacing:.06em;color:var(--accent);margin:0 0 8px}
+h1{font:400 26px/1.3 var(--font-display);margin:0;text-wrap:balance}
+.lede{margin:10px 0 0;color:var(--muted);font-size:13px}
+h2{font:700 12px/1.3 var(--font-body);letter-spacing:.12em;color:var(--muted);margin:0 0 8px}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{font:500 13px/1 var(--font-body);min-height:36px;padding:0 12px;border:1px solid var(--line);background:transparent;color:var(--fg);border-radius:8px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--hi);outline-offset:2px}
+.checks{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:10px}
+.checks label{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+input[type=checkbox]{accent-color:var(--accent);width:16px;height:16px;margin:0}
+.sub{margin:0 0 8px;font-size:12px;color:var(--muted)}
+
+.zones{display:grid;gap:12px}
+.zones .zhead{font:500 12px/1.4 var(--font-body);color:var(--muted);margin-bottom:6px}
+.zones .zgroup{display:grid;gap:4px}
+.zones .zgroup.g10{grid-template-columns:repeat(10,minmax(0,1fr))}
+.zones button{font:500 11px/1 var(--font-mono);color:var(--fg);padding:0;min-height:34px;border:1px solid var(--line);background:transparent;border-radius:6px;cursor:pointer;box-shadow:inset 0 -4px 0 var(--tc)}
+.zones button[data-t="1"]{--tc:var(--s-seat1)}
+.zones button[data-t="2"]{--tc:var(--s-seat2)}
+.zones button[aria-pressed="true"]{background:var(--hi);border-color:var(--hi)}
+
+.card{border:1px solid var(--line);border-radius:8px;padding:14px;display:grid;gap:12px}
+.card .name{font:700 16px/1.3 var(--font-body)}
+.card .empty{margin:0;color:var(--muted);font-size:13px}
+.stats,.facts{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;margin:0;font-size:13px}
+.stats dt,.facts dt{color:var(--muted)}
+.stats dd,.facts dd{margin:0;font-family:var(--font-mono);font-variant-numeric:tabular-nums;font-size:12.5px}
+.rowline{display:flex;justify-content:space-between;font-size:13px}
+.rowline b{font-family:var(--font-mono);font-weight:500;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent);margin:4px 0 0}
+.btns{display:flex;flex-wrap:wrap;gap:6px}
+.btns button{font:700 13px/1 var(--font-body);min-height:38px;padding:0 14px;border-radius:8px;border:1px solid var(--accent);background:var(--accent);color:var(--accent-ink);cursor:pointer}
+.btns button.ghost{background:transparent;color:var(--fg);border-color:var(--line);font-weight:500}
+.btns button[hidden]{display:none}
+
+.note{font-size:12px;color:var(--muted);margin:0}
+.src{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:4px;font-size:12px}
+.src a{color:var(--fg);text-underline-offset:3px}
+
+@media (max-width:760px){
+  .app{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,50%) minmax(0,50%)}
+  h1{font-size:22px}
+  .hint{display:none}
+}
+</style>
+
+<div class="app">
+  <div class="stage" id="stage">
+    <canvas id="c" tabindex="0" aria-label="バックスタンドの3Dモデル。ドラッグで視点を回転、ホイールで拡大縮小。"></canvas>
+    <div class="hud"><i></i><span id="hudText">俯瞰</span></div>
+  </div>
+
+  <aside class="panel" aria-label="操作パネル">
+    <header>
+      <p class="eyebrow">茨城県立カシマサッカースタジアム</p>
+      <h1>メルカリスタジアム<br>バックスタンド</h1>
+    </header>
+
+    <section>
+      <h2>視点</h2>
+      <div class="seg" id="views">
+        <button type="button" data-view="overview" aria-pressed="true">俯瞰</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>表示</h2>
+      <div class="seg" id="tiers">
+        <button type="button" data-tier="all" aria-pressed="true">全層</button>
+        <button type="button" data-tier="1" aria-pressed="false">1層のみ</button>
+        <button type="button" data-tier="2" aria-pressed="false">2層のみ</button>
+      </div>
+      <div class="checks">
+        <label><input type="checkbox" id="hideUpper"> 上層を隠す</label>
+        <label><input type="checkbox" id="gatesOn" checked> 入口</label>
+        <label><input type="checkbox" id="restOn"> トイレ</label>
+        <label><input type="checkbox" id="onlyFloor"> コンコースを1階層ずつ</label>
+      </div>
+    </section>
+
+    <section>
+      <h2>入口(南から北)</h2>
+      <div class="seg" id="gates"></div>
+      <div class="btns" style="margin-top:8px">
+        <button type="button" id="gateView">入口からピッチを見る</button>
+        <button type="button" id="gateBack" class="ghost" hidden>全体に戻る</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>フロア</h2>
+      <div class="seg" id="floors"></div>
+      <p class="sub" id="floorInfo" hidden style="margin-top:10px" aria-live="polite">階を選ぶと、入口やコンコース、入れるスタンドを確認できます。</p>
+    </section>
+
+    <section>
+      <h2>区画を選ぶ</h2>
+      <div class="zones" id="zones"></div>
+    </section>
+
+    <section>
+      <h2>選んだ席</h2>
+      <div class="card" aria-live="polite">
+        <p class="empty" id="seatEmpty">区画を選んでください。</p>
+        <div id="seatBody" hidden style="display:grid;gap:12px">
+          <div class="name" id="seatName"></div>
+          <div>
+            <div class="rowline"><span>列</span><b id="rowText"></b></div>
+            <input type="range" id="rowRange" min="1" max="18" value="1" aria-label="列を選ぶ">
+          </div>
+          <dl class="stats">
+            <dt>席種</dt><dd id="stK"></dd>
+            <dt>座面の高さ</dt><dd id="stH"></dd>
+            <dt>タッチラインまで</dt><dd id="stT"></dd>
+            <dt>ピッチ中心まで</dt><dd id="stC"></dd>
+            <dt>この層の傾斜</dt><dd id="stA"></dd>
+          </dl>
+          <div class="btns">
+            <button type="button" id="goSeat">この席からの眺め</button>
+            <button type="button" id="back" class="ghost" hidden>全体に戻る</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </aside>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+var root=document.documentElement;
+function $(s){return document.querySelector(s);}
+function $$(s){return Array.prototype.slice.call(document.querySelectorAll(s));}
+var rad=function(d){return d*Math.PI/180;};
+var clamp=function(v,a,b){return Math.max(a,Math.min(b,v));};
+var reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+var stage=$('#stage'), canvas=$('#c');
+
+function fail(msg){stage.innerHTML='<p class="fail">'+msg+'</p>';}
+if(!window.THREE){fail('3Dライブラリを読み込めませんでした。ネットワークを確認して再読み込みしてください。');return;}
+var renderer;
+try{renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:true});}
+catch(e){fail('このブラウザでは3D表示(WebGL)を開始できませんでした。');return;}
+renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
+
+/* ---------- model constants (metres). Slopes are from public sources; the rest is schematic. ---------- */
+var PITCH_L=105, PITCH_W=68, TURF_L=115, TURF_W=78, STAND_L=104, Z_FRONT=44;
+var T1={n:18,d:0.85,ang:29,h0:0.9}, T2={n:22,d:0.85,ang:33};
+var CONC=3.5, LIFT2=1.4, T_SLAB=1.4, CLEAR=8.6, OVERLAP=6.85;
+/* lower tier seat categories from the official seat map (south to north): cat 6 south x4, cat 4 south x3, cat 2 x6, cat 4 north x3, cat 6 north x4 */
+var CAT_N=['カテゴリー6 指定(南側)','カテゴリー4 指定(南側)','カテゴリー2 指定','カテゴリー4 指定(北側)','カテゴリー6 指定(北側)'];
+var CAT_I=[0,0,0,0,1,1,1,2,2,2,2,2,2,3,3,3,4,4,4,4];
+var CAT_C=[new THREE.Color(0x14a085),new THREE.Color(0xd4dc3c),new THREE.Color(0x7b4fd0),new THREE.Color(0xd4dc3c),new THREE.Color(0x14a085)];
+var KIND={1:'下層(2階から入場)',2:'上層 イースト自由席(4階から入場)'};
+/* 20 blocks in total, assumed to be 10 per tier (numbers are provisional, south to north) */
+var ZN_T={1:20,2:20}, AISLE_T={1:1.2,2:1.2};
+function zoneLenT(t){return (STAND_L-AISLE_T[t]*(ZN_T[t]-1))/ZN_T[t];}
+function zoneCxT(t,i){var L=zoneLenT(t);return -STAND_L/2+L/2+i*(L+AISLE_T[t]);}
+function zoneLabel(t,i){return 'ブロック'+(i+1);}
+
+var r1=T1.d*Math.tan(rad(T1.ang)), r2=T2.d*Math.tan(rad(T2.ang));
+var rows={1:[],2:[]}, z=Z_FRONT, i;
+for(i=0;i<T1.n;i++){rows[1].push({z0:z,zc:z+T1.d/2,h:T1.h0+i*r1});z+=T1.d;}
+/* the upper tier sits above the lower tier: its front edge overhangs the rear rows of the lower stand */
+var zConc=z-OVERLAP;
+var h2=T1.h0+((zConc-Z_FRONT)/T1.d)*r1+CLEAR+T_SLAB;
+z=zConc;
+for(i=0;i<T2.n;i++){rows[2].push({z0:z,zc:z+T2.d/2,h:h2+i*r2});z+=T2.d;}
+var zEnd=z;
+var TIER={1:T1,2:T2};
+/* concourse floor heights are schematic; the stands themselves are two separate bodies */
+/* concourse floors are set to the entrance cross aisles: lower = row 7 (index 6), upper = row 4 (index 3) */
+var F2=rows[1][6].h+0.5,F4=rows[2][3].h+0.5-3.0,F3=(F2+F4)/2,T_SLAB=1.4;
+var zLowerEnd=rows[1][T1.n-1].z0+T1.d;
+var hLast2=rows[2][T2.n-1].h;
+var slopeU=(hLast2-h2)/(zEnd-zConc);
+function zUnder(y){return zConc+(y-(h2-T_SLAB))/slopeU;}
+
+/* ---------- theme tokens read from CSS ---------- */
+var C={};
+function readTheme(){
+  var cs=getComputedStyle(root);
+  function g(n){return new THREE.Color(cs.getPropertyValue(n).trim());}
+  C.bg=g('--s-bg');C.ground=g('--s-ground');C.concrete=g('--s-concrete');C.ghost=g('--s-ghost');
+  C.seat1=g('--s-seat1');C.seat2=g('--s-seat2');C.dim=g('--s-dim');C.hi=g('--s-hi');
+  C.pitchA=g('--s-pitchA');C.pitchB=g('--s-pitchB');C.roof=g('--s-roof');C.label=g('--s-label');C.line=g('--s-line');
+  var t=root.getAttribute('data-theme');
+  C.dark=t==='dark'||(t!=='light'&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);
+}
+readTheme();
+
+/* ---------- scene ---------- */
+var scene=new THREE.Scene();
+scene.fog=new THREE.Fog(0x000000,200,520);
+var camera=new THREE.PerspectiveCamera(45,1,0.3,900);
+var hemi=new THREE.HemisphereLight(0xffffff,0x667066,0.9); scene.add(hemi);
+var sun=new THREE.DirectionalLight(0xffffff,0.7); sun.position.set(-60,90,-40); scene.add(sun);
+
+var matGround=new THREE.MeshLambertMaterial({color:C.ground});
+var ground=new THREE.Mesh(new THREE.PlaneGeometry(900,900),matGround);
+ground.rotation.x=-Math.PI/2; ground.position.y=-0.03; scene.add(ground);
+
+/* pitch with real FIFA markings */
+var PS=16, pc=document.createElement('canvas'); pc.width=TURF_L*PS; pc.height=TURF_W*PS;
+function m(v){return v*PS;}
+function drawPitch(){
+  var g=pc.getContext('2d'), s, side;
+  for(s=0;s<23;s++){g.fillStyle=(s%2?C.pitchB:C.pitchA).getStyle();g.fillRect(s*5*PS,0,5*PS,pc.height);}
+  g.save();g.translate(m((TURF_L-PITCH_L)/2),m((TURF_W-PITCH_W)/2));
+  g.strokeStyle=C.line.getStyle();g.fillStyle=C.line.getStyle();g.lineWidth=0.2*PS;
+  g.strokeRect(m(0.1),m(0.1),m(PITCH_L-0.2),m(PITCH_W-0.2));
+  g.beginPath();g.moveTo(m(52.5),0);g.lineTo(m(52.5),m(PITCH_W));g.stroke();
+  g.beginPath();g.arc(m(52.5),m(34),m(9.15),0,Math.PI*2);g.stroke();
+  g.beginPath();g.arc(m(52.5),m(34),m(0.3),0,Math.PI*2);g.fill();
+  var a=Math.acos(5.5/9.15);
+  for(side=0;side<2;side++){
+    var px=side?m(PITCH_L-16.5):0, gx=side?m(PITCH_L-5.5):0, sx=side?m(PITCH_L-11):m(11);
+    g.strokeRect(px+(side?0:m(0.1)),m(34-20.16),m(16.5),m(40.32));
+    g.strokeRect(gx+(side?0:m(0.1)),m(34-9.16),m(5.5),m(18.32));
+    g.beginPath();g.arc(sx,m(34),m(0.3),0,Math.PI*2);g.fill();
+    g.beginPath();
+    if(side){g.arc(sx,m(34),m(9.15),Math.PI-a,Math.PI+a);}else{g.arc(sx,m(34),m(9.15),-a,a);}
+    g.stroke();
+  }
+  g.beginPath();g.arc(0,0,m(1),0,Math.PI/2);g.stroke();
+  g.beginPath();g.arc(m(PITCH_L),0,m(1),Math.PI/2,Math.PI);g.stroke();
+  g.beginPath();g.arc(0,m(PITCH_W),m(1),-Math.PI/2,0);g.stroke();
+  g.beginPath();g.arc(m(PITCH_L),m(PITCH_W),m(1),Math.PI,Math.PI*1.5);g.stroke();
+  g.restore();
+}
+var pitchTex=new THREE.CanvasTexture(pc);
+pitchTex.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());
+var pitch=new THREE.Mesh(new THREE.PlaneGeometry(TURF_L,TURF_W),new THREE.MeshLambertMaterial({map:pitchTex}));
+pitch.rotation.x=-Math.PI/2; pitch.position.y=0.01; scene.add(pitch);
+
+/* goals */
+var matWhite=new THREE.MeshLambertMaterial({color:0xf4f4f0});
+[-1,1].forEach(function(sx){
+  var gx=sx*PITCH_L/2;
+  [-3.66,3.66].forEach(function(pz){var p=new THREE.Mesh(new THREE.BoxGeometry(0.12,2.44,0.12),matWhite);p.position.set(gx,1.22,pz);scene.add(p);});
+  var bar=new THREE.Mesh(new THREE.BoxGeometry(0.12,0.12,7.44),matWhite);bar.position.set(gx,2.44,0);scene.add(bar);
+});
+
+/* stand geometry (stepped profile extruded along the stand) */
+function standShape(){
+  var s=new THREE.Shape(), pts=[], k, r;
+  s.moveTo(Z_FRONT,0);
+  pts.push([Z_FRONT,rows[1][0].h]);
+  for(k=0;k<T1.n;k++){r=rows[1][k];pts.push([r.z0+T1.d,r.h]);if(k<T1.n-1)pts.push([r.z0+T1.d,rows[1][k+1].h]);}
+  pts.push([zConc,rows[1][T1.n-1].h]);pts.push([zConc,h2]);
+  for(k=0;k<T2.n;k++){r=rows[2][k];pts.push([r.z0+T2.d,r.h]);if(k<T2.n-1)pts.push([r.z0+T2.d,rows[2][k+1].h]);}
+  pts.push([zEnd,0]);
+  pts.forEach(function(p){s.lineTo(p[0],p[1]);});
+  return s;
+}
+function extrude(shape,len){
+  var g=new THREE.ExtrudeGeometry(shape,{depth:len,bevelEnabled:false});
+  g.rotateY(-Math.PI/2); g.translate(len/2,0,0); return g;
+}
+var matConcrete=new THREE.MeshLambertMaterial({color:C.concrete});
+function lowerShape(){
+  var s=new THREE.Shape(),k,r;
+  s.moveTo(Z_FRONT,0);s.lineTo(Z_FRONT,rows[1][0].h);
+  for(k=0;k<T1.n;k++){r=rows[1][k];s.lineTo(r.z0+T1.d,r.h);if(k<T1.n-1)s.lineTo(r.z0+T1.d,rows[1][k+1].h);}
+  s.lineTo(zLowerEnd,0);return s;
+}
+function upperShape(){
+  var s=new THREE.Shape(),k,r;
+  s.moveTo(zConc,h2-T_SLAB);s.lineTo(zConc,h2);
+  for(k=0;k<T2.n;k++){r=rows[2][k];s.lineTo(r.z0+T2.d,r.h);if(k<T2.n-1)s.lineTo(r.z0+T2.d,rows[2][k+1].h);}
+  s.lineTo(zEnd,hLast2-T_SLAB);return s;
+}
+var lowerBody=new THREE.Mesh(extrude(lowerShape(),STAND_L),matConcrete); scene.add(lowerBody);
+var upperBody=new THREE.Mesh(extrude(upperShape(),STAND_L),matConcrete); scene.add(upperBody);
+var supportGroup=new THREE.Group();
+[zLowerEnd+0.6,zEnd-1].forEach(function(zs){
+  var top=h2-T_SLAB+slopeU*(zs-zConc)+0.1;
+  for(var ci=0;ci<9;ci++){
+    var sc=new THREE.Mesh(new THREE.BoxGeometry(0.9,top,0.9),matConcrete);
+    sc.position.set(-52+ci*13,top/2,zs);supportGroup.add(sc);
+  }
+});
+scene.add(supportGroup);
+
+/* front hoarding */
+var hoard=new THREE.Mesh(new THREE.BoxGeometry(STAND_L,1.0,0.16),matConcrete);
+hoard.position.set(0,0.5,Z_FRONT-0.12); scene.add(hoard);
+
+/* seats */
+function seatTexture(){
+  var c=document.createElement('canvas');c.width=c.height=32;var g=c.getContext('2d');
+  g.fillStyle='#ffffff';g.fillRect(0,0,32,32);
+  g.fillStyle='rgba(0,0,0,0.34)';g.fillRect(0,0,2,32);
+  g.fillStyle='rgba(0,0,0,0.22)';g.fillRect(0,21,32,11);
+  return new THREE.CanvasTexture(c);
+}
+var baseSeatTex=seatTexture();
+var seatMats={}, seatMeshes=[];
+[1,2].forEach(function(t){
+  var zl=zoneLenT(t), seatGeo=new THREE.BoxGeometry(zl,0.5,0.46), nAcross=Math.max(1,Math.round(zl/0.5));
+  for(var zi=0;zi<ZN_T[t];zi++){
+    var tex=baseSeatTex.clone();tex.needsUpdate=true;tex.wrapS=THREE.RepeatWrapping;tex.repeat.set(nAcross,1);
+    var mat=new THREE.MeshLambertMaterial({color:0xffffff,map:tex});
+    seatMats[t+'-'+zi]=mat;
+    rows[t].forEach(function(r,ri){
+      var mesh=new THREE.Mesh(seatGeo,mat);
+      mesh.position.set(zoneCxT(t,zi),r.h+0.25,r.zc);
+      mesh.userData={tier:t,zone:zi,row:ri};
+      scene.add(mesh);seatMeshes.push(mesh);
+    });
+  }
+});
+
+/* roof and columns */
+var matRoof=new THREE.MeshLambertMaterial({color:C.roof,transparent:true,opacity:0.34,depthWrite:false,side:THREE.DoubleSide});
+var roofShape=new THREE.Shape();
+roofShape.moveTo(46,33);roofShape.lineTo(84,40);roofShape.lineTo(84,41.2);roofShape.lineTo(46,34.2);
+var roofGroup=new THREE.Group();
+roofGroup.add(new THREE.Mesh(extrude(roofShape,STAND_L+34),matRoof));
+var matCol=new THREE.MeshLambertMaterial({color:C.concrete});
+for(i=0;i<=7;i++){
+  var col=new THREE.Mesh(new THREE.BoxGeometry(1.1,39.6,1.1),matCol);
+  col.position.set(-58+i*16.6,19.8,83);roofGroup.add(col);
+}
+/* roof removed from the display on request */
+
+
+/* selection markers */
+var matHi=new THREE.MeshBasicMaterial({color:C.hi});
+var stripMat=new THREE.MeshBasicMaterial({color:C.hi,transparent:true,opacity:0.55});
+var strip=new THREE.Mesh(new THREE.BoxGeometry(1,0.06,0.5),stripMat);strip.visible=false;scene.add(strip);
+var pin=new THREE.Mesh(new THREE.SphereGeometry(0.42,16,12),matHi);pin.visible=false;scene.add(pin);
+var pole=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,1,6),matHi);pole.visible=false;scene.add(pole);
+
+/* labels */
+var labels=[];
+function makeLabel(text,w,x,y,zp){
+  var c=document.createElement('canvas');c.width=512;c.height=128;
+  var tex=new THREE.CanvasTexture(c);
+  var sp=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));
+  sp.scale.set(w,w/4,1);sp.position.set(x,y,zp);
+  sp.userData={text:text,canvas:c,tex:tex};scene.add(sp);labels.push(sp);
+  return sp;
+}
+function drawLabel(sp){
+  var c=sp.userData.canvas,g=c.getContext('2d');
+  g.clearRect(0,0,512,128);
+  g.fillStyle=C.bg.getStyle();g.globalAlpha=0.72;
+  var len=sp.userData.text.length,fs=Math.min(52,Math.floor(430/len)),w=len*fs*1.08+48,x=(512-w)/2;
+  g.beginPath();
+  if(g.roundRect){g.roundRect(x,26,w,76,18);}else{g.rect(x,26,w,76);}
+  g.fill();g.globalAlpha=1;
+  g.fillStyle=C.label.getStyle();g.font='700 '+fs+'px "Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif';
+  g.textAlign='center';g.textBaseline='middle';g.fillText(sp.userData.text,256,66);
+  sp.userData.tex.needsUpdate=true;
+}
+makeLabel('バックスタンド',30,0,46,66);
+makeLabel('北(アウェイ側)',14,68,4,0);
+makeLabel('南(ホーム側)',14,-68,4,0);
+
+/* entrances on the backstand side, south (-x) to north (+x); spacing along the stand is evenly assumed */
+var GATE_NAMES=['O','P','Q','R','S','T'];
+var GATE_BASE=new THREE.Color(0x2a6fdb);
+var tunMat=new THREE.MeshBasicMaterial({color:0x2a6fdb,transparent:true,opacity:0.35,depthTest:false,depthWrite:false});
+var upMat=new THREE.MeshLambertMaterial({color:GATE_BASE});
+function addTunnel(gx,y,z0,z1,h){var L=Math.abs(z1-z0);var m=new THREE.Mesh(new THREE.BoxGeometry(3.4,h,L),tunMat);m.position.set(gx,y+h/2,(z0+z1)/2);m.renderOrder=5;gateGroup.add(m);return m;}
+var selGate=-1, gates=[], gateGroup=new THREE.Group(), upperGateObjs=[];
+GATE_NAMES.forEach(function(n,gi){
+  /* portals from the 2F concourse into the lower stand; x taken from the supplied plan (even spacing about 15.8 m) */
+  var gx=zoneCxT(1,2+3*gi), gz=zLowerEnd+0.3;
+  var mat=new THREE.MeshLambertMaterial({color:GATE_BASE});
+  var portal=new THREE.Mesh(new THREE.BoxGeometry(5.2,4.2,0.9),mat);
+  portal.position.set(gx,F2+2.1,gz);gateGroup.add(portal);
+  var pad=new THREE.Mesh(new THREE.BoxGeometry(5.2,0.12,3.0),mat);
+  pad.position.set(gx,F2+0.3,gz+1.9);gateGroup.add(pad);
+  var pole=new THREE.Mesh(new THREE.BoxGeometry(0.25,3.2,0.25),mat);
+  pole.position.set(gx,F2+5.8,gz+1.4);gateGroup.add(pole);
+  gateGroup.add(makeLabel(n,9,gx,F2+4.4,gz+3.2));
+  gates.push({name:n,x:gx,z:gz,mat:mat});
+  /* opening in the lower bowl at the cross aisle (photo: 6 openings, about 6 rows up from the pitch) */
+  var rw=rows[1][6];
+  var vom=new THREE.Mesh(new THREE.BoxGeometry(3.4,2.4,1.6),new THREE.MeshLambertMaterial({color:0x14201a}));
+  vom.position.set(gx,rw.h+1.0,rw.z0+0.9);gateGroup.add(vom);
+  addTunnel(gx,F2,rw.z0+0.9,zLowerEnd+0.3,2.8);
+  var kio=new THREE.Mesh(new THREE.BoxGeometry(2.0,1.1,0.9),new THREE.MeshLambertMaterial({color:C.line}));
+  kio.position.set(gx,rw.h+0.55,rw.z0-0.5);gateGroup.add(kio);
+});
+/* upper tier entrances from the 4F concourse: same 6 positions, at the rear of the upper stand */
+(function(){
+  var rw=rows[2][3];
+  /* cross aisles at the entrance rows: upper = after 3 rows from the front, lower = about 6 rows up */
+  [[1,6],[2,3]].forEach(function(q){
+    var r=rows[q[0]][q[1]];
+    var st=new THREE.Mesh(new THREE.BoxGeometry(STAND_L,0.1,(q[0]===1?T1.d:T2.d)*0.95),new THREE.MeshLambertMaterial({color:C.concrete}));
+    st.position.set(0,r.h+0.8,r.z0+0.45);gateGroup.add(st);if(q[0]===2)upperGateObjs.push(st);
+  });
+  for(var gi=0;gi<6;gi++){
+    var gx=zoneCxT(2,2+3*gi);
+    var o=new THREE.Mesh(new THREE.BoxGeometry(3.4,2.6,1.6),new THREE.MeshLambertMaterial({color:0x14201a}));
+    o.position.set(gx,rw.h+1.1,rw.z0+0.6);gateGroup.add(o);upperGateObjs.push(o);
+    var fr=new THREE.Mesh(new THREE.BoxGeometry(3.8,0.35,0.5),new THREE.MeshLambertMaterial({color:C.line}));
+    fr.position.set(gx,rw.h+2.5,rw.z0-0.3);gateGroup.add(fr);upperGateObjs.push(fr);
+    var zu=Math.max(zLowerEnd,zUnder(F4+0.8));
+    /* the upper tier is entered by climbing stairs from the 4F concourse up to the cross aisle (row 4) */
+    (function(){
+      var nS=8,topH=rw.h+0.3,run=(zu-(rw.z0+0.6))/nS;
+      for(var k=0;k<nS;k++){
+        var th=F4+(k+1)*(topH-F4)/nS;
+        var stp=new THREE.Mesh(new THREE.BoxGeometry(3.4,th-F4,run),tunMat);
+        stp.position.set(gx,F4+(th-F4)/2,zu-(k+0.5)*run);stp.renderOrder=5;gateGroup.add(stp);upperGateObjs.push(stp);
+      }
+    })();
+    var up=new THREE.Mesh(new THREE.BoxGeometry(5.2,4.2,0.9),upMat);up.position.set(gx,F4+2.1,zu+0.3);gateGroup.add(up);upperGateObjs.push(up);
+    var upad=new THREE.Mesh(new THREE.BoxGeometry(5.2,0.12,3.0),upMat);upad.position.set(gx,F4+0.3,zu+1.9);gateGroup.add(upad);upperGateObjs.push(upad);
+    var upl=makeLabel(GATE_NAMES[gi],13,gx,F4+7.4,zu+1.4);gateGroup.add(upl);upperGateObjs.push(upl);
+  }
+})();
+scene.add(gateGroup);
+function refreshGateColors(){
+  gates.forEach(function(g,i){g.mat.color.copy(i===selGate||selFloor===2?C.hi:GATE_BASE);});
+  upMat.color.copy(selFloor===4?C.hi:GATE_BASE);
+  dirty=true;
+}
+
+/* concourse floors (2F lower stand, 3F plaza, 4F upper stand) and the three vertical stairs */
+var floorGroup=new THREE.Group(), floors={}, selFloor=-1;
+var PL=58;
+/* BUMP: only the 2F concourse is widened by 4 m so that the vertical stair towers fit inside it (zOut2); 3F and 4F keep the original edge */
+var BUMP=4.0;
+function zOut2(x){return zOutAt(x)+BUMP;}
+function zOutAt(x){return zLowerEnd+10.5+6.0*(1-Math.pow(Math.min(1,Math.abs(x)/60),2));}
+function addFloor(idx,y,zIn){
+  var s=new THREE.Shape(),k;
+  s.moveTo(-PL,zIn);s.lineTo(PL,zIn);
+  for(k=0;k<=24;k++){var xx=PL-k*(2*PL/24);s.lineTo(xx,idx===2?zOut2(xx):zOutAt(xx));}
+  var g=new THREE.ExtrudeGeometry(s,{depth:0.5,bevelEnabled:false});
+  g.rotateX(Math.PI/2);g.translate(0,y,0);
+  var mat=new THREE.MeshLambertMaterial({color:C.concrete});
+  if(idx===2){mat.transparent=true;mat.opacity=0.4;mat.depthWrite=false;}
+  floorGroup.add(new THREE.Mesh(g,mat));
+  floors[idx]={mat:mat,y:y};
+}
+var z3=Math.max(zLowerEnd,zUnder(F3+0.8)), z4=Math.max(zLowerEnd,zUnder(F4+0.8));
+addFloor(2,F2,zLowerEnd);addFloor(3,F3,z3);addFloor(4,F4,z4);
+
+/* exterior details seen in Street View: open pilotis under 2F, railings per floor, roof truss */
+(function(){
+  var cm=new THREE.MeshLambertMaterial({color:C.concrete});
+  var xs=[];for(var q=-56;q<=56.1;q+=8)xs.push(q);
+  xs.forEach(function(xx){
+    var zo=zOut2(xx);
+    if(xx!==-56){var c=new THREE.Mesh(new THREE.BoxGeometry(1.2,F2,1.2),cm);c.position.set(xx,F2/2,zo-1);floorGroup.add(c);}
+    var c2=new THREE.Mesh(new THREE.BoxGeometry(1.2,F2,1.2),cm);c2.position.set(xx,F2/2,zo-8);floorGroup.add(c2);
+  });
+  [F2,F3,F4].forEach(function(fy){
+    var pts=[];for(var k=0;k<=24;k++){var xx=-PL+k*(2*PL/24);pts.push(new THREE.Vector3(xx,fy+1.1,(fy===F2?zOut2(xx):zOutAt(xx))-0.2));}
+    var ln=new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts),new THREE.LineBasicMaterial({color:C.label}));
+    floorGroup.add(ln);
+    var pts2=pts.map(function(v){return new THREE.Vector3(v.x,fy+0.1,v.z);});
+    floorGroup.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts2),new THREE.LineBasicMaterial({color:C.label})));
+  });
+  /* roof diagonal truss */
+  var tp=[];
+  for(var i2=0;i2<14;i2++){
+    var x0=-58+i2*8.9,x1=x0+8.9;
+    tp.push(new THREE.Vector3(x0,39.6,83),new THREE.Vector3(x1,40.6,60));
+    tp.push(new THREE.Vector3(x1,39.6,83),new THREE.Vector3(x0,40.6,60));
+  }
+  roofGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(tp),new THREE.LineBasicMaterial({color:C.concrete})));
+})();
+/* 2F concourse as seen in the photos: round columns, A-frame braces along the outer edge, stalls along the stand-side wall */
+(function(){
+  var cm=new THREE.MeshLambertMaterial({color:C.concrete.clone().lerp(C.line,0.35)});
+  var up=new THREE.Vector3(0,1,0);
+  function strut(p1,p2,r){
+    var d=new THREE.Vector3().subVectors(p2,p1),L=d.length();
+    var m=new THREE.Mesh(new THREE.CylinderGeometry(r,r,L,10),cm);
+    m.position.copy(p1).add(p2).multiplyScalar(0.5);
+    m.quaternion.setFromUnitVectors(up,d.clone().normalize());
+    floorGroup.add(m);
+  }
+  var xs=[];for(var q=-56;q<=56.1;q+=8)xs.push(q);
+  xs.forEach(function(xx){
+    var zo=zOutAt(xx)-1;
+    if(xx!==-56)strut(new THREE.Vector3(xx,F2,zo),new THREE.Vector3(xx,F3,zo),0.55);
+  });
+  /* elevator: the column facing the nursing room */
+  var ez=zOut2(-56)-1;
+  var elv=new THREE.Mesh(new THREE.BoxGeometry(2.8,F4+0.5,2.8),new THREE.MeshLambertMaterial({color:0x2a8f9e}));
+  elv.position.set(-56,(F4+0.5)/2,ez);floorGroup.add(elv);
+  floorGroup.add(makeLabel('エレベーター',8,-56,F4+2.5,ez));
+  /* gate 5 stairs: they continue from the back side (outer side) of the elevator. A landing at 2F floor level touches the elevator's rear face,
+     and the flight goes down toward the south (-x) from the landing */
+  (function(){
+    var nS=14,run=0.55,sm2=new THREE.MeshLambertMaterial({color:C.line});
+    var eb=ez+1.4,lz=eb+1.7;
+    /* plaza from behind the elevator to the first column (x = -48) */
+    var land=new THREE.Mesh(new THREE.BoxGeometry(9.5,0.5,4.4),new THREE.MeshLambertMaterial({color:C.concrete.clone().lerp(C.line,0.3)}));
+    land.position.set(-52.75,F2-0.25,eb+2.2);land.userData.fixed=2;floorGroup.add(land);
+    var x0=-56-1.5;
+    for(var k=0;k<nS;k++){
+      var top=Math.max(F2-(k+1)*F2/nS,0.1);
+      var st=new THREE.Mesh(new THREE.BoxGeometry(run,top,3.4),sm2);
+      st.position.set(x0-(k+0.5)*run,top/2,lz);st.userData.fixed=2;floorGroup.add(st);
+    }
+    floorGroup.add(makeLabel('5ゲート階段',9,-61,F2+2.4,lz));
+  })();
+  /* fan club booth between P and Q (stand side) and the eco station opposite it, next to the central vertical stair */
+  var fb=new THREE.Mesh(new THREE.BoxGeometry(6,3,3),new THREE.MeshLambertMaterial({color:0xc8343c}));
+  fb.position.set((gates[1].x+gates[2].x)/2,F2+1.5,zLowerEnd+2.2);floorGroup.add(fb);
+  floorGroup.add(makeLabel('ファンクラブブース',12,(gates[1].x+gates[2].x)/2,F2+4.6,zLowerEnd+2.2));
+  var ex2=(gates[2].x+gates[3].x)/2-5.5,ezs=zOut2(0)-2.2;
+  var eco=new THREE.Mesh(new THREE.BoxGeometry(3.4,2.6,3),new THREE.MeshLambertMaterial({color:0x3f9a4a}));
+  eco.position.set(ex2,F2+1.3,ezs);floorGroup.add(eco);
+  floorGroup.add(makeLabel('エコステーション',11,ex2,F2+4,ezs));
+  var sm=new THREE.MeshLambertMaterial({color:0x8a5a3a});
+  gates.forEach(function(g,gi){
+    if(gi>4||gi===1)return;
+    var sx=(g.x+gates[gi+1].x)/2;
+    var st=new THREE.Mesh(new THREE.BoxGeometry(3,2.4,2),sm);
+    st.position.set(sx,F2+1.2,zLowerEnd+1.6);floorGroup.add(st);
+  });
+})();
+var plazaMat=new THREE.MeshLambertMaterial({color:C.pitchA});
+var PX0=34,PX1=52,zPl=Math.min(zOutAt(PX0),zOutAt(PX1))-0.5;
+var plazaD=Math.min(7,zPl-z3-0.8);
+var plaza=new THREE.Mesh(new THREE.BoxGeometry(PX1-PX0,0.2,plazaD),plazaMat);
+var zPc=z3+0.8+plazaD/2;
+plaza.position.set((PX0+PX1)/2,F3+0.1,zPc);floorGroup.add(plaza);
+floorGroup.add(makeLabel('こども広場',18,(PX0+PX1)/2,F3+4,zPc));
+/* 3F: only the kids plaza (north) and the space on the opposite side (south) are open; the rest is walled */
+(function(){
+  var wm=new THREE.MeshLambertMaterial({color:C.concrete.clone().lerp(C.line,0.15)}),WH=3.6,X0=-32,X1=32;
+  /* the long walls run parallel to the pitch and sit 3 m toward the pitch from the concourse edge, with the passage behind them (outer side) */
+  function zWall(x){return Math.max(zOutAt(x)-5.6,z3+2);}
+  var nSeg=12,dxs=(X1-X0)/nSeg;
+  for(var k=0;k<nSeg;k++){
+    var xa=X0+k*dxs,xb=xa+dxs,za=zWall(xa),zb=zWall(xb);
+    var len=Math.hypot(xb-xa,zb-za);
+    var w=new THREE.Mesh(new THREE.BoxGeometry(len+0.05,WH,0.35),wm);
+    w.position.set((xa+xb)/2,F3+WH/2,(za+zb)/2);w.rotation.y=-Math.atan2(zb-za,xb-xa);floorGroup.add(w);
+  }
+  /* fences as an extension of the wall line: south space (x -57.5 to -32) and the kids plaza (x 32 to 57.5); the plaza fence has an entrance at the third bay from its far end */
+  function mkFence(xs,xe,nF,gapIdx){
+    var fm=new THREE.MeshLambertMaterial({color:C.label}),FH=WH,dxf=(xe-xs)/nF;
+    for(var k=0;k<=nF;k++){
+      var xp=xs+k*dxf;
+      var post=new THREE.Mesh(new THREE.BoxGeometry(0.14,FH,0.14),fm);
+      post.position.set(xp,F3+FH/2,zWall(xp));floorGroup.add(post);
+      if(k<nF&&k!==gapIdx){
+        var xa2=xp,xb2=xp+dxf,za2=zWall(xa2),zb2=zWall(xb2),len2=Math.hypot(xb2-xa2,zb2-za2);
+        [FH-0.08,FH*0.66,FH*0.33].forEach(function(hy){
+          var rl=new THREE.Mesh(new THREE.BoxGeometry(len2,0.08,0.08),fm);
+          rl.position.set((xa2+xb2)/2,F3+hy,(za2+zb2)/2);rl.rotation.y=-Math.atan2(zb2-za2,xb2-xa2);floorGroup.add(rl);
+        });
+      }
+    }
+  }
+  mkFence(-57.5,X0,10,2);
+  mkFence(X1,57.5,10,7);
+  /* the passage runs behind the wall, between the wall and the concourse edge */
+  var ps=new THREE.Shape(),px=[],q;
+  for(q=0;q<=16;q++)px.push(X0+q*(X1-X0)/16);
+  ps.moveTo(X0,zWall(X0)+0.4);
+  px.forEach(function(xx){ps.lineTo(xx,zOutAt(xx)-0.3);});
+  for(q=px.length-1;q>=0;q--)ps.lineTo(px[q],zWall(px[q])+0.4);
+  var pg=new THREE.ExtrudeGeometry(ps,{depth:0.06,bevelEnabled:false});pg.rotateX(Math.PI/2);pg.translate(0,F3+0.14,0);
+  floorGroup.add(new THREE.Mesh(pg,new THREE.MeshLambertMaterial({color:C.hi})));
+  /* partition walls on the column line (x = +-32), from the stand side to the long wall; the passage behind stays open */
+  [X0,X1].forEach(function(xe){
+    var ze=zWall(xe),d=ze-z3;
+    var w=new THREE.Mesh(new THREE.BoxGeometry(0.35,WH,d),wm);
+    w.position.set(xe,F3+WH/2,z3+d/2);floorGroup.add(w);
+  });
+  /* 3F restrooms on the wall side of the passage, between the vertical stairs: women, men, men, women from the south */
+  [[-22.5,'w'],[-7.5,'m'],[7.5,'m'],[22.5,'w']].forEach(function(r){
+    var m3=new THREE.MeshBasicMaterial({color:r[1]==='w'?0xc9363e:0x2a5da8,transparent:true,opacity:0.9});
+    var b3=new THREE.Mesh(new THREE.BoxGeometry(5,2.6,0.08),m3);
+    b3.position.set(r[0],F3+1.5,zWall(r[0])+0.42);b3.userData.rest=true;floorGroup.add(b3);
+    var l3=makeLabel(r[1]==='w'?'女':'男',3.6,r[0],F3+1.5,zWall(r[0])+0.8);l3.userData.rest=true;floorGroup.add(l3);
+  });
+})();
+/* 3F premium seats on the top row of the lower tier: sofa seats (center) and roomy seats (both sides) */
+(function(){
+  var r=rows[1][T1.n-1],sofaM=new THREE.MeshLambertMaterial({color:0x5b3a29}),roomyM=new THREE.MeshLambertMaterial({color:0xc79a3b});
+  var zc=r.z0+T1.d/2;
+  function seat(x,w,m,sofa){
+    var b=new THREE.Mesh(new THREE.BoxGeometry(w,sofa?0.9:0.7,0.8),m);b.position.set(x,r.h+0.6,zc-0.05);b.userData.keepGate=true;floorGroup.add(b);
+    var k=new THREE.Mesh(new THREE.BoxGeometry(w,sofa?1.5:1.2,0.2),m);k.position.set(x,r.h+(sofa?1.05:0.9),zc+0.35);k.userData.keepGate=true;floorGroup.add(k);
+  }
+  var x;
+  for(x=-20;x<20;x+=3.2)seat(x+1.5,2.9,sofaM,true);
+  for(x=-50;x<-20;x+=1.6)seat(x+0.8,1.4,roomyM,false);
+  for(x=20;x<50;x+=1.6)seat(x+0.8,1.4,roomyM,false);
+})();
+[[2,F2],[3,F3],[4,F4]].forEach(function(p){floorGroup.add(makeLabel(p[0]+'階',7,-60,p[1]+1.6,zOutAt(58)));});
+/* restrooms (red = women, blue = men) below the 2F concourse; the nursing room is on the 2F concourse, from the supplied plan */
+var restMats={w:new THREE.MeshBasicMaterial({color:0xc9363e,transparent:true,opacity:0.8,depthTest:false}),m:new THREE.MeshBasicMaterial({color:0x2a5da8,transparent:true,opacity:0.8,depthTest:false})};
+var RL=F2-3.0;
+[[48.3,'w'],[31.1,'m'],[15.3,'m'],[-0.7,'w'],[-16.9,'m'],[-33.2,'m'],[-50.6,'w']].forEach(function(r){
+  var b=new THREE.Mesh(new THREE.BoxGeometry(5,2.6,0.08),restMats[r[1]]);
+  b.position.set(r[0],RL+1.3,zLowerEnd+0.06);b.renderOrder=4;b.userData.rest=true;floorGroup.add(b);
+  var tl=makeLabel(r[1]==='w'?'女':'男',3.6,r[0],RL+1.3,zLowerEnd+0.4);tl.material.depthTest=false;tl.renderOrder=6;tl.userData.rest=true;floorGroup.add(tl);
+});
+var nurse=new THREE.Mesh(new THREE.BoxGeometry(6,3.2,4.5),plazaMat);
+nurse.position.set(-54.5,F2+1.6,zLowerEnd+2.25);floorGroup.add(nurse);
+floorGroup.add(makeLabel('授乳室',8,-54.5,F2+4.8,zLowerEnd+2.25));
+/* restroom level slab and one stair flight per entrance, going down from the 2F passage */
+var rslab=new THREE.Mesh(new THREE.BoxGeometry(2*PL,0.3,12),new THREE.MeshLambertMaterial({color:C.concrete}));
+rslab.position.set(0,RL-0.15,zLowerEnd-0.5);floorGroup.add(rslab);
+gates.forEach(function(g,gi){
+  /* facing the entrance from the concourse: O,P,Q descend toward the left (south, -x), R,S,T toward the right (north, +x) */
+  var dir=gi<3?-1:1,n=7,rise=3.0/n,run=0.5;
+  for(var k=0;k<n;k++){
+    var top=F2-(k+1)*rise,h=top-RL;
+    var st=new THREE.Mesh(new THREE.BoxGeometry(run,h,3.0),new THREE.MeshLambertMaterial({color:C.line}));
+    st.position.set(g.x+dir*(2.7+k*run+run/2),RL+h/2,zLowerEnd+2.0);floorGroup.add(st);
+  }
+});
+function stairTexture(){
+  var c=document.createElement('canvas');c.width=8;c.height=16;var g=c.getContext('2d');
+  g.fillStyle='#ffffff';g.fillRect(0,0,8,16);g.fillStyle='rgba(0,0,0,0.35)';g.fillRect(0,0,8,5);
+  var t=new THREE.CanvasTexture(c);t.wrapT=THREE.RepeatWrapping;t.repeat.set(1,(F4-F2)/0.9);return t;
+}
+var stairMat=new THREE.MeshLambertMaterial({color:C.seat1,map:stairTexture()});
+[gates[0].x,(gates[2].x+gates[3].x)/2,gates[5].x].forEach(function(sx){
+  var b=new THREE.Mesh(new THREE.BoxGeometry(5,F4-F2,3.6),stairMat);
+  b.position.set(sx,(F2+F4)/2,zOut2(sx)-2.2);b.userData.tower=true;floorGroup.add(b);
+  var tlb=makeLabel('縦階段',9,sx,F4+3,zOut2(sx)-2.2);tlb.userData.tower=true;floorGroup.add(tlb);
+});
+scene.add(floorGroup);
+/* classify every concourse object by floor so that one floor can be shown at a time (0 = always shown) */
+var floorObjs=[], upperHiddenFlag=false, onlyOneFloor=false, restOn=false;
+function classifyFloors(){
+  var lv=[0,0,F2,F3,F4];
+  [floorGroup,gateGroup].forEach(function(g){
+    g.children.forEach(function(o){
+      var y0,y1;
+      if(o.isSprite){y0=y1=o.position.y;}
+      else{var bb=new THREE.Box3().setFromObject(o);y0=bb.min.y;y1=bb.max.y;}
+      var f;
+      if(o.userData.fixed!==undefined){f=o.userData.fixed;}
+      else if(y1-y0>8){f=0;}
+      else if(y0<0.8){f=1;}
+      else if(y1<=F2+0.2){f=2;}
+      else{var mid=(y0+y1)/2;f=2;if(lv[3]<=mid+0.3)f=3;if(lv[4]<=mid+0.3)f=4;}
+      o.userData.floor=f;
+      if(upperGateObjs.indexOf(o)>=0)o.userData.up=true;
+      floorObjs.push(o);
+    });
+  });
+}
+classifyFloors();
+function applyVis(){
+  floorObjs.forEach(function(o){
+    var ok=!onlyOneFloor||selFloor<1||o.userData.floor===0||o.userData.floor===selFloor;
+    if(o.userData.up&&upperHiddenFlag)ok=false;
+    if(o.userData.rest&&!restOn)ok=false;
+    if(o.userData.tower&&selGate>=0)ok=false;
+    if(selGate>=0&&(o.userData.floor===3||o.userData.floor===4)&&!o.userData.keepGate)ok=false;
+    o.visible=ok;
+  });
+  dirty=true;
+}
+applyVis();
+function refreshFloorColors(){
+  applyVis();
+  var base=C.concrete.clone().lerp(C.line,0.3);
+  [2,3,4].forEach(function(f){floors[f].mat.color.copy(selFloor===f?C.hi:base);});
+  plazaMat.color.copy(C.pitchA);stairMat.color.copy(selFloor===1?C.hi:C.seat1);
+  dirty=true;
+}
+
+/* ---------- theme application ---------- */
+var tierFilter='all', sel=null;
+function refreshSeatColors(){
+  Object.keys(seatMats).forEach(function(key){
+    var t=+key.charAt(0), zi=+key.slice(2), col=t===1?CAT_C[CAT_I[zi]]:C.seat2;
+    if(tierFilter!=='all'&&+tierFilter!==t)col=C.dim;
+    if(sel&&sel.tier===t&&sel.zone===zi)col=C.hi;
+    seatMats[key].color.copy(col);
+  });
+  dirty=true;
+}
+var dirty=true;
+function applyTheme(){
+  readTheme();
+  scene.background=C.bg;scene.fog.color.copy(C.bg);
+  matGround.color.copy(C.ground);matConcrete.color.copy(C.concrete);matCol.color.copy(C.concrete);
+  matRoof.color.copy(C.roof);matRoof.opacity=C.dark?0.4:0.34;
+  matHi.color.copy(C.hi);stripMat.color.copy(C.hi);
+  hemi.intensity=C.dark?0.55:0.9;sun.intensity=C.dark?0.55:0.7;
+  drawPitch();pitchTex.needsUpdate=true;
+  labels.forEach(drawLabel);
+  refreshSeatColors();refreshGateColors();refreshFloorColors();dirty=true;
+}
+applyTheme();
+if(document.fonts&&document.fonts.ready){document.fonts.ready.then(function(){labels.forEach(drawLabel);dirty=true;});}
+new MutationObserver(applyTheme).observe(root,{attributes:true,attributeFilter:['data-theme']});
+if(window.matchMedia){
+  var mq=window.matchMedia('(prefers-color-scheme: dark)');
+  if(mq.addEventListener){mq.addEventListener('change',applyTheme);}
+}
+
+/* ---------- camera ---------- */
+function orbitView(tx,ty,tz,r,theta,phi){
+  return {mode:'orbit',target:new THREE.Vector3(tx,ty,tz),r:r,theta:theta,phi:phi,pos:new THREE.Vector3(),yaw:0,pitch:0,fov:45};
+}
+function seatPose(px,py,pz,yaw,pitch,fov){
+  return {mode:'seat',target:new THREE.Vector3(),r:100,theta:0,phi:1,pos:new THREE.Vector3(px,py,pz),yaw:yaw,pitch:pitch,fov:fov};
+}
+var PRESETS={
+  overview:{label:'俯瞰',make:function(){return orbitView(0,8,52,120,Math.PI,1.0);}},
+  section:{label:'断面',make:function(){return orbitView(0,12,60,110,Math.PI/2,1.36);}},
+  top:{label:'真上',make:function(){return orbitView(0,0,22,150,Math.PI,0.03);}},
+  pitch:{label:'ピッチ目線',make:function(){return seatPose(0,1.7,26,0,0.32,70);}}
+};
+var view=PRESETS.overview.make();
+var tmpCam=new THREE.PerspectiveCamera();
+function poseInto(cam,v){
+  if(v.mode==='orbit'){
+    var s=Math.sin(v.phi),c=Math.cos(v.phi);
+    cam.position.set(v.target.x+v.r*s*Math.sin(v.theta),v.target.y+v.r*c,v.target.z+v.r*s*Math.cos(v.theta));
+    cam.lookAt(v.target);
+  }else{
+    cam.position.copy(v.pos);
+    var cp=Math.cos(v.pitch);
+    cam.lookAt(v.pos.x+Math.sin(v.yaw)*cp,v.pos.y+Math.sin(v.pitch),v.pos.z+Math.cos(v.yaw)*cp);
+  }
+  cam.fov=v.fov;cam.updateProjectionMatrix();
+}
+function applyView(){poseInto(camera,view);dirty=true;}
+var tweening=false;
+function flyTo(v,ms){
+  ms=reduceMotion?0:(ms==null?900:ms);
+  if(ms===0){view=v;applyView();return;}
+  var a={p:camera.position.clone(),q:camera.quaternion.clone(),f:camera.fov};
+  poseInto(tmpCam,v);
+  var b={p:tmpCam.position.clone(),q:tmpCam.quaternion.clone(),f:tmpCam.fov};
+  var t0=performance.now();tweening=true;
+  function step(now){
+    var k=Math.min(1,(now-t0)/ms),e=k<0.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+    camera.position.lerpVectors(a.p,b.p,e);
+    camera.quaternion.copy(a.q).slerp(b.q,e);
+    camera.fov=a.f+(b.f-a.f)*e;camera.updateProjectionMatrix();dirty=true;
+    if(k<1){requestAnimationFrame(step);}else{tweening=false;view=v;applyView();}
+  }
+  requestAnimationFrame(step);
+}
+
+/* ---------- input ---------- */
+var ptrs=new Map(), downAt=null, movedPx=0, pinchPrev=0;
+var rayc=new THREE.Raycaster(), mouse=new THREE.Vector2();
+var vRight=new THREE.Vector3(), vUp=new THREE.Vector3();
+function clearPresetHighlight(){
+  $$('#views button').forEach(function(b){b.setAttribute('aria-pressed','false');});
+}
+function panBy(dx,dy){
+  var k=view.r*0.0018;camera.updateMatrixWorld();
+  vRight.setFromMatrixColumn(camera.matrixWorld,0);vUp.setFromMatrixColumn(camera.matrixWorld,1);
+  view.target.addScaledVector(vRight,-dx*k).addScaledVector(vUp,dy*k);
+  view.target.x=clamp(view.target.x,-140,140);view.target.z=clamp(view.target.z,-140,140);view.target.y=clamp(view.target.y,-5,60);
+}
+canvas.addEventListener('contextmenu',function(e){e.preventDefault();});
+canvas.addEventListener('pointerdown',function(e){
+  if(tweening)return;
+  canvas.setPointerCapture(e.pointerId);
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY,button:e.button});
+  if(ptrs.size===1){downAt={x:e.clientX,y:e.clientY};movedPx=0;}
+  if(ptrs.size===2){var a=Array.from(ptrs.values());pinchPrev=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);}
+});
+canvas.addEventListener('pointermove',function(e){
+  var p=ptrs.get(e.pointerId);if(!p||tweening)return;
+  var dx=e.clientX-p.x,dy=e.clientY-p.y;
+  movedPx+=Math.abs(dx)+Math.abs(dy);
+  if(ptrs.size===1){
+    p.x=e.clientX;p.y=e.clientY;
+    if(movedPx>4){clearPresetHighlight();}
+    var pan=p.button===2||e.shiftKey;
+    if(view.mode==='orbit'){
+      if(pan){panBy(dx,dy);}
+      else{view.theta-=dx*0.006;view.phi=clamp(view.phi-dy*0.006,0.02,1.52);}
+    }else{
+      var s=view.fov/70;
+      view.yaw+=dx*0.004*s;view.pitch=clamp(view.pitch+dy*0.004*s,-1.2,1.2);
+    }
+    applyView();
+  }else if(ptrs.size===2){
+    var before=Array.from(ptrs.values());
+    var mx0=(before[0].x+before[1].x)/2,my0=(before[0].y+before[1].y)/2;
+    p.x=e.clientX;p.y=e.clientY;
+    var a=Array.from(ptrs.values()),d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);
+    var mx1=(a[0].x+a[1].x)/2,my1=(a[0].y+a[1].y)/2;
+    if(pinchPrev>0){
+      var f=pinchPrev/d;
+      if(view.mode==='orbit'){view.r=clamp(view.r*f,8,260);panBy(mx1-mx0,my1-my0);}
+      else{view.fov=clamp(view.fov*f,25,90);}
+    }
+    pinchPrev=d;clearPresetHighlight();applyView();
+  }
+});
+function endPointer(e){
+  var was=ptrs.size;
+  if(!ptrs.has(e.pointerId))return;
+  ptrs.delete(e.pointerId);pinchPrev=0;
+  if(was===1&&e.type==='pointerup'&&movedPx<=5&&!tweening){pick(e.clientX,e.clientY);}
+}
+canvas.addEventListener('pointerup',endPointer);
+canvas.addEventListener('pointercancel',endPointer);
+canvas.addEventListener('wheel',function(e){
+  e.preventDefault();if(tweening)return;
+  var f=Math.exp(e.deltaY*0.0012);
+  if(view.mode==='orbit'){view.r=clamp(view.r*f,8,260);}else{view.fov=clamp(view.fov*f,25,90);}
+  clearPresetHighlight();applyView();
+},{passive:false});
+canvas.addEventListener('keydown',function(e){
+  if(tweening)return;
+  var h=true;
+  if(view.mode==='orbit'){
+    if(e.key==='ArrowLeft')view.theta+=0.08;else if(e.key==='ArrowRight')view.theta-=0.08;
+    else if(e.key==='ArrowUp')view.phi=clamp(view.phi-0.06,0.02,1.52);else if(e.key==='ArrowDown')view.phi=clamp(view.phi+0.06,0.02,1.52);
+    else if(e.key==='+'||e.key==='=')view.r=clamp(view.r*0.9,8,260);else if(e.key==='-')view.r=clamp(view.r/0.9,8,260);else h=false;
+  }else{
+    if(e.key==='ArrowLeft')view.yaw+=0.06;else if(e.key==='ArrowRight')view.yaw-=0.06;
+    else if(e.key==='ArrowUp')view.pitch=clamp(view.pitch+0.05,-1.2,1.2);else if(e.key==='ArrowDown')view.pitch=clamp(view.pitch-0.05,-1.2,1.2);
+    else if(e.key==='+'||e.key==='=')view.fov=clamp(view.fov*0.92,25,90);else if(e.key==='-')view.fov=clamp(view.fov/0.92,25,90);else h=false;
+  }
+  if(h){e.preventDefault();clearPresetHighlight();applyView();}
+});
+function pick(cx,cy){
+  var rect=canvas.getBoundingClientRect();
+  mouse.set(((cx-rect.left)/rect.width)*2-1,-((cy-rect.top)/rect.height)*2+1);
+  rayc.setFromCamera(mouse,camera);
+  var hits=rayc.intersectObjects(seatMeshes,false).filter(function(h){return h.object.visible&&h.object.userData.tier===1;});
+  if(!hits.length)return;
+  var u=hits[0].object.userData,cxz=zoneCxT(u.tier,u.zone),zl=zoneLenT(u.tier);
+  selectSeat(u.tier,u.zone,u.row,clamp(hits[0].point.x,cxz-zl/2+0.3,cxz+zl/2-0.3));
+}
+
+/* ---------- UI ---------- */
+var atSeat=false;
+var hudText=$('#hudText');
+function setHud(t){hudText.textContent=t;}
+
+var zonesEl=$('#zones');
+(function buildZones(){
+  [1].forEach(function(t){
+    var lg=document.createElement('div');lg.style.cssText='display:flex;flex-wrap:wrap;gap:6px 12px;font:500 12px/1.3 var(--font-body);margin-bottom:8px';
+    [[0,'カテゴリー6'],[1,'カテゴリー4'],[2,'カテゴリー2']].forEach(function(q){
+      var it=document.createElement('span');it.style.cssText='display:inline-flex;align-items:center;gap:5px';
+      var sw=document.createElement('i');sw.style.cssText='width:14px;height:14px;border-radius:3px;background:#'+CAT_C[q[0]].getHexString();
+      it.appendChild(sw);var tx=document.createElement('span');tx.textContent=q[1];it.appendChild(tx);lg.appendChild(it);
+    });
+    zonesEl.appendChild(lg);
+    var head=document.createElement('div');head.className='zhead';
+    head.textContent='下層(南から北)';
+    zonesEl.appendChild(head);
+    var grp=document.createElement('div');grp.className='zgroup'+(ZN_T[t]>1?' g10':'');
+    for(var zi=0;zi<ZN_T[t];zi++){
+      var b=document.createElement('button');b.type='button';b.dataset.t=t;b.dataset.z=zi;
+      b.textContent=String(zi+1);b.style.borderBottom='6px solid #'+CAT_C[CAT_I[zi]].getHexString();b.title=CAT_N[CAT_I[zi]];
+      b.setAttribute('aria-pressed','false');b.setAttribute('aria-label',t+'層 '+zoneLabel(t,zi));
+      b.addEventListener('click',function(ev){
+        var tb=+ev.currentTarget.dataset.t,zb=+ev.currentTarget.dataset.z;
+        var keep=sel&&sel.tier===tb?Math.min(sel.row,rows[tb].length-1):Math.floor(rows[tb].length/2);
+        selectSeat(tb,zb,keep,zoneCxT(tb,zb));
+      });
+      grp.appendChild(b);
+    }
+    zonesEl.appendChild(grp);
+  });
+})();
+
+var seatEmpty=$('#seatEmpty'), seatBody=$('#seatBody'), rowRange=$('#rowRange');
+function seatPos(){var r=rows[sel.tier][sel.row];return new THREE.Vector3(sel.x,r.h,r.zc);}
+function updateMarkers(){
+  if(!sel){strip.visible=pin.visible=pole.visible=false;dirty=true;return;}
+  var r=rows[sel.tier][sel.row];
+  strip.visible=pin.visible=pole.visible=true;
+  strip.scale.x=zoneLenT(sel.tier);
+  strip.position.set(zoneCxT(sel.tier,sel.zone),r.h+0.53,r.zc);
+  pin.position.set(sel.x,r.h+2.1,r.zc);
+  pole.scale.y=1.2;pole.position.set(sel.x,r.h+1.4,r.zc);
+  dirty=true;
+}
+function updateUI(){
+  $$('.zones button').forEach(function(b){
+    b.setAttribute('aria-pressed',sel&&+b.dataset.t===sel.tier&&+b.dataset.z===sel.zone?'true':'false');
+  });
+  if(!sel){seatEmpty.hidden=false;seatBody.hidden=true;return;}
+  seatEmpty.hidden=true;seatBody.hidden=false;
+  var n=rows[sel.tier].length,r=rows[sel.tier][sel.row];
+  $('#seatName').textContent=sel.tier+'層 '+zoneLabel(sel.tier,sel.zone);
+  rowRange.max=n;rowRange.value=sel.row+1;
+  $('#rowText').textContent=(sel.row+1)+' / '+n+'列目';
+  $('#stK').textContent=sel.tier===1?CAT_N[CAT_I[sel.zone]]:KIND[sel.tier];
+  $('#stH').textContent='約 '+r.h.toFixed(1)+' m';
+  $('#stT').textContent='約 '+Math.round(r.zc-PITCH_W/2)+' m';
+  $('#stC').textContent='約 '+Math.round(Math.hypot(sel.x,r.zc))+' m';
+  $('#stA').textContent=TIER[sel.tier].ang+'°';
+  $('#back').hidden=!atSeat;
+}
+function selectSeat(tier,zone,row,x){
+  sel={tier:tier,zone:zone,row:row,x:x};
+  refreshSeatColors();updateMarkers();updateUI();
+  if(atSeat){seatCamera(false);}
+}
+function seatCamera(animate){
+  var p=seatPos(),eye=new THREE.Vector3(p.x,p.y+1.2,p.z);
+  var dx=-eye.x*0.5,dz=10-eye.z,dy=0-eye.y;
+  var yaw=Math.atan2(dx,dz),pitch=clamp(Math.atan2(dy,Math.hypot(dx,dz)),-1.2,1.2);
+  var v=seatPose(eye.x,eye.y,eye.z,yaw,pitch,70);
+  atSeat=true;setHud('席からの眺め '+sel.tier+'層 '+zoneLabel(sel.tier,sel.zone)+' '+(sel.row+1)+'列目');
+  clearPresetHighlight();
+  $('#back').hidden=false;
+  if(animate){flyTo(v);}else{view=v;applyView();}
+  pin.visible=false;pole.visible=false;
+}
+
+rowRange.addEventListener('input',function(){
+  if(!sel)return;
+  sel.row=clamp(+rowRange.value-1,0,rows[sel.tier].length-1);
+  updateMarkers();updateUI();
+  if(atSeat){seatCamera(false);}
+});
+$('#goSeat').addEventListener('click',function(){if(sel&&!tweening){seatCamera(true);}});
+$('#gateView').addEventListener('click',function(){
+  if(tweening)return;
+  var gi=selGate>=0?selGate:2,g=gates[gi],rw=rows[1][6];
+  var ex=g.x,ey=rw.h+1.7,ez=rw.z0+1.2;
+  var dx=-ex*0.4,dz=-ez,dy=-1.5-ey;
+  var yaw=Math.atan2(dx,dz),pitch=clamp(Math.atan2(dy,Math.hypot(dx,dz)),-1.2,1.2);
+  selFloor=-1;refreshFloorColors();clearFloorChips();
+  gateGroup.visible=true;$('#gatesOn').checked=true;
+  atSeat=false;clearPresetHighlight();
+  setHud('入口 '+g.name+' からの眺め');
+  $('#gateBack').hidden=false;
+  flyTo(seatPose(ex,ey,ez,yaw,pitch,75));
+});
+$('#gateBack').addEventListener('click',function(){if(!tweening){$('#gateBack').hidden=true;setPreset('overview');}});
+$('#back').addEventListener('click',function(){if(!tweening){setPreset('overview');}});
+
+function setPreset(name){
+  if(tweening)return;
+  var p=PRESETS[name];if(!p)return;
+  atSeat=false;$('#back').hidden=true;
+  if(selGate>=0){selGate=-1;Array.prototype.forEach.call(gatesEl.children,function(b){b.setAttribute('aria-pressed','false');});refreshGateColors();applyVis();}
+  if(sel){updateMarkers();}
+  $$('#views button').forEach(function(b){b.setAttribute('aria-pressed',b.dataset.view===name?'true':'false');});
+  setHud(p.label);flyTo(p.make());
+}
+$$('#views button').forEach(function(b){b.addEventListener('click',function(){setPreset(b.dataset.view);});});
+$$('#tiers button').forEach(function(b){
+  b.addEventListener('click',function(){
+    tierFilter=b.dataset.tier;
+    $$('#tiers button').forEach(function(x){x.setAttribute('aria-pressed',x===b?'true':'false');});
+    refreshSeatColors();
+  });
+});
+var gatesEl=$('#gates');
+GATE_NAMES.forEach(function(n,gi){
+  var b=document.createElement('button');b.type='button';b.textContent=n;b.dataset.g=gi;
+  b.setAttribute('aria-pressed','false');b.setAttribute('aria-label','入口'+n);
+  b.addEventListener('click',function(){selectGate(gi);});
+  gatesEl.appendChild(b);
+});
+function selectGate(gi){
+  if(tweening)return;
+  selGate=gi;selFloor=-1;refreshFloorColors();refreshGateColors();clearFloorChips();
+  Array.prototype.forEach.call(gatesEl.children,function(b){b.setAttribute('aria-pressed',+b.dataset.g===gi?'true':'false');});
+  atSeat=false;$('#back').hidden=true;clearPresetHighlight();
+  setHud('入口 '+GATE_NAMES[gi]);
+  gateGroup.visible=true;$('#gatesOn').checked=true;
+  setUpperHidden(true);
+  flyTo(orbitView(gates[gi].x,F2+2,zLowerEnd+4,36,0.3,1.2));
+}
+var FLOOR_INFO={
+  1:'地上です。コンコースの縦階段(O入口の前、Q・R入口の中間の前、T入口の前)で上の階へ上がります。',
+  2:'2階コンコース。入口O〜Tから下層スタンドに入れます。各入口の通路から階段で下りたところ(入口に向かって、O・P・Qは左側へ、R・S・Tは右側へ下る階段)に、男女トイレ7か所があります。南端の2階コンコースに授乳室があります。',
+  3:'3階コンコース。北側にこども広場、反対の南側にスペースがあり、その間は壁で仕切られ、通路は壁の後ろ(外側)を通っています。',
+  4:'4階コンコース。入口から階段を上って上層スタンドに入ります。上層と下層はつながっていないので注意してください。'
+};
+var floorsEl=$('#floors'), floorInfo=$('#floorInfo');
+[1,2,3,4].forEach(function(f){
+  var b=document.createElement('button');b.type='button';b.textContent=f+'階';b.dataset.f=f;
+  b.setAttribute('aria-pressed','false');
+  b.addEventListener('click',function(){selectFloor(f);});
+  floorsEl.appendChild(b);
+});
+function clearFloorChips(){
+  Array.prototype.forEach.call(floorsEl.children,function(b){b.setAttribute('aria-pressed','false');});
+  floorInfo.textContent='階を選ぶと、入口やコンコース、入れるスタンドを確認できます。';
+}
+function setUpperHidden(h){
+  upperBody.visible=!h;supportGroup.visible=!h;upperHiddenFlag=h;applyVis();
+  seatMeshes.forEach(function(m){if(m.userData.tier===2)m.visible=!h;});
+  $('#hideUpper').checked=h;dirty=true;
+}
+function selectFloor(f){
+  if(tweening)return;
+  selFloor=f;selGate=-1;refreshFloorColors();refreshGateColors();
+  Array.prototype.forEach.call(gatesEl.children,function(b){b.setAttribute('aria-pressed','false');});
+  Array.prototype.forEach.call(floorsEl.children,function(b){b.setAttribute('aria-pressed',+b.dataset.f===f?'true':'false');});
+  floorInfo.textContent=FLOOR_INFO[f];
+  setUpperHidden(f===2||f===3);
+  gateGroup.visible=true;$('#gatesOn').checked=true;floorGroup.visible=true;
+  atSeat=false;$('#back').hidden=true;clearPresetHighlight();setHud(f+'階');
+  var y=f===1?0:(f===2?F2:(f===3?F3:F4));
+  flyTo(orbitView(0,y+3,zOutAt(0),f===1?90:80,0.55,1.2));
+}
+$('#hideUpper').addEventListener('change',function(e){setUpperHidden(e.target.checked);});
+$('#restOn').addEventListener('change',function(e){restOn=e.target.checked;applyVis();});
+$('#onlyFloor').addEventListener('change',function(e){onlyOneFloor=e.target.checked;if(onlyOneFloor&&selFloor<1){selectFloor(2);}else{applyVis();}});
+$('#gatesOn').addEventListener('change',function(e){gateGroup.visible=e.target.checked;dirty=true;});
+
+/* ---------- render loop ---------- */
+function resize(){
+  var w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;
+  renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();dirty=true;
+}
+if(window.ResizeObserver){new ResizeObserver(resize).observe(stage);}
+window.addEventListener('resize',resize);
+resize();applyView();
+function loop(){
+  if(dirty){dirty=false;renderer.render(scene,camera);}
+  requestAnimationFrame(loop);
+}
+loop();
+})();
+</script>
+
+</body></html>
